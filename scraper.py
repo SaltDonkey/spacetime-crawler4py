@@ -1,4 +1,5 @@
 import re
+from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 
 def scraper(url, resp):
@@ -15,10 +16,23 @@ def extract_next_links(url, resp):
     #         resp.raw_response.url: the url, again
     #         resp.raw_response.content: the content of the page!
     # Return a list with the hyperlinks (as strings) scrapped from resp.raw_response.content
-    links = []
     
-    if is_valid(url):
-        pass
+    # Initialize list of links
+    links = []
+ 
+    # Check if response status code is 200 and to see if the url is valid
+    # If not, then an error occured or the url is invalid and we don't crawl,
+    # return an empty list
+    if resp.status == 200 and is_valid(url):
+        # Start the scraping here
+        # Parse the HTML content of the website using BeautifulSoup
+        soup = BeautifulSoup(resp.raw_response.content, "html.parser")
+
+        # Extract the links from the webpage
+        links.extend([link.get("href") for link in soup.find_all("a")])
+
+        # TODO: Check for looping, check for webpage similarity, check to see if this thing works in the first place
+        
     return links
 
 def is_valid(url):
