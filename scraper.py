@@ -1,10 +1,19 @@
 import re
 from bs4 import BeautifulSoup
-from urllib.parse import urlparse
+from urllib.robotparser import RobotFileParser
+from urllib.parse import urlparse, urljoin
+# import time
 
 def scraper(url, resp):
     links = extract_next_links(url, resp)
+    # time.sleep(0.5) # Pause for 0.5 seconds just to see if can be polite
     return [link for link in links if is_valid(link)]
+
+def _robotParser(url):
+    robotTxtParser = RobotFileParser()
+    robotTxtParser.set_url(urljoin(url, "/robots.txt"))
+    robotTxtParser.read()
+    return robotTxtParser
 
 def extract_next_links(url, resp):
     # Implementation required.
@@ -19,19 +28,15 @@ def extract_next_links(url, resp):
     
     # Initialize list of links
     links = []
- 
-    # Check if response status code is 200 and to see if the url is valid
-    # If not, then an error occured or the url is invalid and we don't crawl,
-    # return an empty list
-    if resp.status == 200 and is_valid(url):
+
+    # Check if response status code is 200 first, otherwise it will not be accesible
+    if resp.status == 200:
         # Start the scraping here
         # Parse the HTML content of the website using BeautifulSoup
         soup = BeautifulSoup(resp.raw_response.content, "html.parser")
 
         # Extract the links from the webpage
         links.extend([link.get("href") for link in soup.find_all("a")])
-
-        # TODO: Check for looping, check for webpage similarity, check to see if this thing works in the first place
         
     return links
 
@@ -41,7 +46,18 @@ def is_valid(url):
     # There are already some conditions that return False.
 
     # Namedtuple (scheme://netloc/path;parameters?query#fragment)
+
+    # TODO: Check for looping/traps, check for webpage similarity (maybe don't have to), check to see if this thing works in the first place
+    # TODO: Check for robots.txt (done?) and sitemaps
     try:
+        # Create a RobotFileParser object and read from robots.txt for any allowed or disallowed content
+        rp = _robotParser(url)
+
+        # Now check if current url is accessible based on robots.txt guidelines
+        # if not, then we cannot crawl, return False
+        if not rp.can_fetch("*", url):
+            return False
+
         parsed = urlparse(url)
         if parsed.scheme not in set(["http", "https"]):
             return False
