@@ -52,11 +52,7 @@ def is_valid(url):
         # *.informatics.uci.edu/*
         # *.stat.uci.edu/*
         # Overall match string is r".*(.ics.uci.edu/.*|.cs.uci.edu/.*|.informatics.uci.edu/.*|.stat.uci.edu/.*)$"
-        return not re.match(
-            r".*(.ics.uci.edu/.*|" +
-            r".cs.uci.edu/.*|" +
-            r".informatics.uci.edu/.*|" +
-            r".stat.uci.edu/.*)$", parsed.netloc.lower())
+        return re.match(r".*\.(ics|cs|informatics|stat)\.uci\.edu/.*$", parsed.netloc.lower());
 
     except TypeError:
         print ("TypeError for ", parsed)
