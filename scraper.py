@@ -2,18 +2,26 @@ import re
 from bs4 import BeautifulSoup
 from urllib.robotparser import RobotFileParser
 from urllib.parse import urlparse, urljoin
-# import time
+
+REGEX_PATTERN = r".*\.(ics|cs|informatics|stat)\.uci\.edu/.*$"
+VISITED_URLS = set()
 
 def scraper(url, resp):
     links = extract_next_links(url, resp)
-    # time.sleep(0.5) # Pause for 0.5 seconds just to see if can be polite
     return [link for link in links if is_valid(link)]
 
-def _robotParser(url):
-    robotTxtParser = RobotFileParser()
-    robotTxtParser.set_url(urljoin(url, "/robots.txt"))
-    robotTxtParser.read()
-    return robotTxtParser
+# def _robotParser(url):
+#     # Create a RobotFileParser from urllib.parse
+#     robotTxtParser = RobotFileParser()
+
+#     # Set the robots.txt URL to parse by using urljoin()
+#     robotTxtParser.set_url(urljoin(url, "/robots.txt"))
+
+#     # Read and parse from the RobotFileParser
+#     robotTxtParser.read()
+
+#     # Return the object
+#     return robotTxtParser
 
 def extract_next_links(url, resp):
     # Implementation required.
@@ -31,13 +39,27 @@ def extract_next_links(url, resp):
 
     # Check if response status code is 200 first, otherwise it will not be accesible
     if resp.status == 200:
-        # Start the scraping here
+        # Add the URL to the VISITED_SET of URLs
+        VISITED_URLS.add(url)
+
         # Parse the HTML content of the website using BeautifulSoup
         soup = BeautifulSoup(resp.raw_response.content, "html.parser")
 
         # Extract the links from the webpage
-        links.extend([link.get("href") for link in soup.find_all("a")])
-        
+
+        # TODO: an issue is that some of the links are partial, need to add the original 
+        # netloc to it
+        # For example: getting links from uci.ics.edu will extract links like "/about/about_deanmsg.php"
+        # Need to add the base url (the netloc) to it (DONE, not too sure)
+        links = [link.get("href") for link in soup.find_all("a")]
+
+        # Check all the scraped links and check to see if they have a netloc/domain 
+        # If they do not, then add the current URL's netloc/domain into the scraped link
+        for i in range(len(links)):
+            parsed = urlparse(links[i])
+            if not parsed.netloc and parsed.path:
+                links[i] = urljoin(url, links[i])
+
     return links
 
 def is_valid(url):
@@ -51,28 +73,29 @@ def is_valid(url):
     # TODO: Check for robots.txt (done?) and sitemaps
     try:
         # Create a RobotFileParser object and read from robots.txt for any allowed or disallowed content
-        rp = _robotParser(url)
+        # rp = _robotParser(url)
 
-        # Now check if current url is accessible based on robots.txt guidelines
-        # if not, then we cannot crawl, return False
-        if not rp.can_fetch("*", url):
+        # # Now check if current url is accessible based on robots.txt guidelines
+        # # if not, then we cannot crawl, return False
+        # if not rp.can_fetch("*", url):
+        #     return False
+
+        # Check if the url has been traversed already
+        if url in VISITED_URLS:
             return False
 
+        # Check if the url has http or https at the beginning
         parsed = urlparse(url)
         if parsed.scheme not in set(["http", "https"]):
             return False
 
-        # The regex string will account for all URLS in this form:
+        # The regex string will account for all URLs in this form:
         # *.ics.uci.edu/*
         # *.cs.uci.edu/*
         # *.informatics.uci.edu/*
         # *.stat.uci.edu/*
-        # Overall match string is r".*(.ics.uci.edu/.*|.cs.uci.edu/.*|.informatics.uci.edu/.*|.stat.uci.edu/.*)$"
-        return not re.match(
-            r".*(.ics.uci.edu/.*|" +
-            r".cs.uci.edu/.*|" +
-            r".informatics.uci.edu/.*|" +
-            r".stat.uci.edu/.*)$", parsed.netloc.lower())
+        # Overall match string is r".*\.(ics|cs|informatics|stat)\.uci\.edu/.*$"
+        return re.match(REGEX_PATTERN, url.lower()) is not None
 
     except TypeError:
         print ("TypeError for ", parsed)
