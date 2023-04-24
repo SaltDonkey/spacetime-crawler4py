@@ -57,9 +57,37 @@ def is_valid(url):
         # *.stat.uci.edu/*
         # Overall match string is r".*(.ics.uci.edu/.*|.cs.uci.edu/.*|.informatics.uci.edu/.*|.stat.uci.edu/.*)$"
         if re.match(r".*\.(ics|cs|informatics|stat)\.uci\.edu/.*$", url.lower()):
-            globalVisted.add(url)
+            globalVisited.add(url)
             return True
 
     except TypeError:
         print ("TypeError for ", parsed)
         raise
+urllist = ["https://www.ics.uci.edu/~kay/courses/i42/hw1.html",
+        "https://www.cs.uci.edu/ugrad/degrees/degree_cs.php",
+        "https://www.informatics.uci.edu/research/",
+        "https://www.stat.uci.edu/undergraduate/minor-in-statistics/",
+        "https://www.math.uci.edu/~chenlong/226/Ch2.pdf",
+        "https://www.physics.uci.edu/~silverma/barn.html",
+        "https://www.amazon.com/",
+        "https://www.google.com/search?q=uci",
+        "https://www.ics.uci.edu/",
+        "https://www.ics.uci.edu/"]
+
+
+if __name__ == '__main__':
+    opt = input("Give opt\n")
+    if opt == "man":
+        yes = True
+        while yes:
+            url = input("Give url\n")
+            if url == "stop":
+                yes = False
+            print(is_valid(url))
+            for i in globalVisited:
+                print(globalVisited)
+    else:
+        for u in urllist:
+            print(u, "Is valid =", is_valid(u))
+            print(len(globalVisited))
+
