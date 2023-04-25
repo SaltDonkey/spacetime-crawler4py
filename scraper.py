@@ -34,6 +34,8 @@ def extract_next_links(url, resp):
     #         resp.raw_response.content: the content of the page!
     # Return a list with the hyperlinks (as strings) scrapped from resp.raw_response.content
     
+    # TODO: Can detect redirect by comparing url and resp.url?
+
     # Initialize list of links
     links = []
 
@@ -55,10 +57,10 @@ def extract_next_links(url, resp):
 
         # Check all the scraped links and check to see if they have a netloc/domain 
         # If they do not, then add the current URL's netloc/domain into the scraped link
-        # for i in range(len(links)):
-        #     parsed = urlparse(links[i])
-        #     if not parsed.netloc and parsed.path:
-        #         links[i] = urljoin(url, links[i])
+        for i in range(len(links)):
+            parsed = urlparse(links[i])
+            if not parsed.netloc and parsed.path:
+                links[i] = urljoin(url, links[i])
 
     return links
 
