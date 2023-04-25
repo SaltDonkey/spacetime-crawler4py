@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 from urllib.robotparser import RobotFileParser
 from urllib.parse import urlparse, urljoin, urldefrag
 
-REGEX_PATTERN = r".*\.(ics|cs|informatics|stat)\.uci\.edu/.*$"
+REGEX_PATTERN = r".*\.(ics|cs|informatics|stat)\.uci\.edu$"
 VISITED_URLS = set()
 
 def scraper(url, resp):
@@ -45,20 +45,20 @@ def extract_next_links(url, resp):
         # Parse the HTML content of the website using BeautifulSoup
         soup = BeautifulSoup(resp.raw_response.content, "html.parser")
 
-        # TODO: an issue is that some of the links are partial, need to add the original 
-        # netloc to it
-        # For example: getting links from uci.ics.edu will extract links like "/about/about_deanmsg.php"
-        # Need to add the base url (the netloc) to it (DONE, not too sure)
-
         # Extract the links from the webpage while being sure to defragment the URLs
         links = [urldefrag(link.get("href")).url for link in soup.find_all("a")]
 
+        # TODO: an issue is that some of the links are relative, need to add the original 
+        # netloc to it to get absolute URL
+        # For example: getting links from uci.ics.edu will extract links like "/about/about_deanmsg.php"
+        # Need to add the base url (the netloc) to it (DONE, not too sure)
+
         # Check all the scraped links and check to see if they have a netloc/domain 
         # If they do not, then add the current URL's netloc/domain into the scraped link
-        for i in range(len(links)):
-            parsed = urlparse(links[i])
-            if not parsed.netloc and parsed.path:
-                links[i] = urljoin(url, links[i])
+        # for i in range(len(links)):
+        #     parsed = urlparse(links[i])
+        #     if not parsed.netloc and parsed.path:
+        #         links[i] = urljoin(url, links[i])
 
     return links
 
@@ -94,8 +94,8 @@ def is_valid(url):
         # *.cs.uci.edu/*
         # *.informatics.uci.edu/*
         # *.stat.uci.edu/*
-        # Overall match string is r".*\.(ics|cs|informatics|stat)\.uci\.edu/.*$"
-        return re.match(REGEX_PATTERN, url.lower()) is not None
+        # Overall match string is r".*\.(ics|cs|informatics|stat)\.uci\.edu$"
+        return re.match(REGEX_PATTERN, parsed.netloc.lower()) is not None
 
     except TypeError:
         print ("TypeError for ", parsed)
