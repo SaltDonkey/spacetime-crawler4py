@@ -56,7 +56,7 @@ def is_valid(url):
         # *.informatics.uci.edu/*
         # *.stat.uci.edu/*
         # Overall match string is r".*(.ics.uci.edu/.*|.cs.uci.edu/.*|.informatics.uci.edu/.*|.stat.uci.edu/.*)$"
-        if re.match(r".*\.(ics|cs|informatics|stat)\.uci\.edu/.*$", url.lower()):
+        if re.match(r".*\.(ics|cs|informatics|stat)\.uci\.edu(/.*)?$", url.lower()):
             globalVisited.add(url)
             return True
 
