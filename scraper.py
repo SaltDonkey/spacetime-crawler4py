@@ -6,9 +6,11 @@ from urllib.parse import urlparse, urljoin, urldefrag
 REGEX_PATTERN = r".*\.(ics|cs|informatics|stat)\.uci\.edu$"
 VISITED_URLS = set()
 
+
 def scraper(url, resp):
     links = extract_next_links(url, resp)
     return [link for link in links if is_valid(link)]
+
 
 # def _robotParser(url):
 #     # Create a RobotFileParser from urllib.parse
@@ -33,7 +35,7 @@ def extract_next_links(url, resp):
     #         resp.raw_response.url: the url, again
     #         resp.raw_response.content: the content of the page!
     # Return a list with the hyperlinks (as strings) scrapped from resp.raw_response.content
-    
+
     # TODO: Can detect redirect by comparing url and resp.url?
 
     # Initialize list of links
@@ -63,6 +65,7 @@ def extract_next_links(url, resp):
                 links[i] = urljoin(url, links[i])
 
     return links
+
 
 def is_valid(url):
     # Decide whether to crawl this url or not. 
@@ -100,5 +103,5 @@ def is_valid(url):
         return re.match(REGEX_PATTERN, parsed.netloc.lower()) is not None
 
     except TypeError:
-        print ("TypeError for ", parsed)
+        print("TypeError for ", parsed)
         raise
