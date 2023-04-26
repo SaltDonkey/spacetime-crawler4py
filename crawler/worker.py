@@ -1,10 +1,189 @@
 from threading import Thread
-
 from inspect import getsource
 from utils.download import download
 from utils import get_logger
+
 import scraper
 import time
+import re
+import tldextract
+
+from collections import defaultdict
+from bs4 import BeautifulSoup
+from nltk.tokenize import RegexpTokenizer
+from difflib import SequenceMatcher
+from urllib.parse import urlparse, urljoin, urldefrag
+
+
+def tokenize(response):
+    """
+    Tokenize the passed html response.
+    :param response: the web response.
+    :return:
+    """
+    tokens = []
+
+    if response.status == 200:
+        soup = BeautifulSoup(response.raw_response.content, "lxml")
+        tokenizer = RegexpTokenizer(r'\w+')
+        tokens = tokenizer.tokenize(soup.get_text())
+
+    return tokens
+
+
+class TrapNavigator:
+    def __init__(self):
+        self.avoided_urls = []
+        self.last_url = None
+
+    def check_for_traps(self, url):
+        """
+        Run trap checks on the passed url.
+        :param url:
+        :return:
+        """
+        if self.similarity_check(url):
+            return True
+
+    def set_url(self, new_url):
+        """
+        Sets the last_url
+        :param new_url: the new url=
+        :return: None
+        """
+        self.last_url = new_url
+
+    def similarity_check(self, new_url):
+        """
+        Checks for similarity between the current url and the new url.
+        If the similarity score is too high, then return True.
+        :param new_url: the url to check
+        :return: True if the score is very high, false otherwise.
+        """
+        new_url_path = urlparse(new_url).path
+        old_url_path = urlparse(self.last_url).path
+        similarity_ratio = SequenceMatcher(None, new_url_path, old_url_path).ratio()
+
+        if similarity_ratio > 0.97:
+            return True
+        else:
+            return False
+
+
+class Results:
+    def __init__(self):
+        """
+        Class to store the assignment results.
+        Stores:
+            A set of unique pages
+            The longest length of a page
+            A dictionary of words
+            #TODO: A dictionary of subdomains
+        """
+        self.unique_pages = set()
+        self.longest_page_count = 0
+        self.words = defaultdict(int)
+        self.subdomains = defaultdict(int)
+        self.stopwords = ["a", "about", "above", "after", "again", "against", "all", "am", "an", "and", "any", "are",
+                          "aren't", "as", "at", "be", "because", "been", "before", "being", "below", "between", "both",
+                          "but", "by", "can't", "cannot", "could", "couldn't", "did", "didn't", "do", "does", "doesn't",
+                          "doing", "don't", "down", "during", "each", "few", "for", "from", "further", "had", "hadn't",
+                          "has", "hasn't", "have", "haven't", "having", "he", "he'd", "he'll", "he's", "her", "here",
+                          "here's", "hers", "herself", "him", "himself", "his", "how", "how's", "i", "i'd", "i'll",
+                          "i'm", "i've", "if", "in", "into", "is", "isn't", "it", "it's", "its", "itself", "let's",
+                          "me", "more", "most", "mustn't", "my", "myself", "no", "nor", "not", "of", "off", "on",
+                          "once", "only", "or", "other", "ought", "our", "ours	ourselves", "out", "over", "own",
+                          "same", "shan't", "she", "she'd", "she'll", "she's", "should", "shouldn't", "so", "some",
+                          "such", "than", "that", "that's", "the", "their", "theirs", "them", "themselves", "then",
+                          "there", "there's", "these", "they", "they'd", "they'll", "they're", "they've", "this",
+                          "those", "through", "to", "too", "under", "until", "up", "very", "was", "wasn't", "we",
+                          "we'd", "we'll", "we're", "we've", "were", "weren't", "what", "what's", "when", "when's",
+                          "where", "where's", "which", "while", "who", "who's", "whom", "why", "why's", "with", "won't",
+                          "would", "wouldn't", "you", "you'd", "you'll", "you're", "you've", "your", "yours",
+                          "yourself", "yourselves"]
+
+    def add_subdomain(self, url) -> None:
+        """
+        # TODO - Not working yet.
+        # TODO - Add checking to make sure the URL has a proper subdomain.
+        Adds a subdomain to the subdomain results.
+        If a given URL has a previously recorded subdomain, increments the
+        subdomain's counter.
+        :param url: the url with the subdomain of interest.
+        :return: None
+        """
+        subdomain_pattern = r'^(?:https?://)?((?:[a-zA-Z0-9-]+\.)*ics\.uci\.edu)(?:/|$)'
+        match = re.match(subdomain_pattern, url)
+        subdomain = match.group(1) if match else None
+
+        if subdomain in self.subdomains:
+            self.subdomains[subdomain] += 1
+        else:
+            self.subdomains[subdomain] = 1
+
+    def add_unique_page(self, url) -> None:
+        """
+        Adds a url to the set of unique pages.
+        :param url: the url to add
+        :return: void
+        """
+        self.unique_pages.add(url.split("#")[0]) # can use urldefrag urldefrag(url).url
+        self.add_subdomain(url)
+
+    def update_longest_length(self, count) -> None:
+        """
+        Updates the current longest page length, if the
+        passed length is greater.
+        :param count: the count of the current page
+        :return: void
+        """
+        if count > self.longest_page_count:
+            self.longest_page_count = count
+
+    def print_longest_length(self) -> None:
+        """
+        Prints the current longest page length.
+        For debugging.
+        :return: void
+        """
+        print(self.longest_page_count)
+
+    def add_word(self, new_word) -> None:
+        """
+        Adds the passed word to the word dict.
+        If the word is already in the dict, increment its counter.
+        :param new_word:
+        :return:
+        """
+        word = new_word.lower()
+        if word not in self.stopwords:
+            if word in self.words:
+                self.words[word] += 1
+            else:
+                self.words[word] = 1
+
+    def get_words(self) -> list:
+        """
+        Sorts the dict by most frequent word first, then returns it.
+        :return: the sorted dictionary of words.
+        """
+        sorted_dict = sorted(self.words.items(), key=lambda x: x[1], reverse=True)
+
+        for entry in sorted_dict:
+            print(entry[0] + " -> " + str(entry[1]))
+
+        return sorted_dict
+
+    def get_subdomains(self) -> dict:
+        """
+        Returns the list of subdomains.
+        :return: the dictionary of subdomains.
+        """
+        print(len(self.subdomains.keys()))
+        for subdomain in self.subdomains.keys():
+            print(subdomain + " -> " + str(self.subdomains[subdomain]))
+
+        return self.subdomains
 
 
 class Worker(Thread):
