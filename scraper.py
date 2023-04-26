@@ -79,6 +79,10 @@ def is_valid(url):
         # if not rp.can_fetch("*", url):
         #     return False
 
+        # HARDCODED TRAP DETECTOR:
+        if url == "https://www.ics.uci.edu/community/alumni/index.php/stayconnected/stayconnected/index.php":
+            return False
+
         # Check if the url has been traversed already
         if url in VISITED_URLS:
             return False
