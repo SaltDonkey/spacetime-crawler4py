@@ -1,5 +1,6 @@
 import re
 from bs4 import BeautifulSoup
+from collections import Counter
 from urllib.robotparser import RobotFileParser
 from urllib.parse import urlparse, urljoin, urldefrag
 
@@ -9,6 +10,27 @@ VISITED_URLS = set()
 def scraper(url, resp):
     links = extract_next_links(url, resp)
     return [link for link in links if is_valid(link)]
+
+def checkForRepeatingPath(parsedUrl):
+    # Take our path and split them into a list to get each path argument
+    # We do [1:] to omit the first "/"
+    pathArgs = parsedUrl.path[1:].split("/")
+    # Make a Counter of all separate path argument
+    pathArgsCounter = Counter(pathArgs)
+
+    # If any argument is repeated 3 or more times, we (most likely) have detected
+    # a trap, exit and don't crawl
+    for _, value in pathArgsCounter.most_common(3):
+        if value >= 3:
+            return False
+    return True
+
+def removeFragmentAndQuery(url):
+    """
+    Removes the query and fragment section from the given url
+    """
+    return urljoin(url, urlparse(url).path)
+
 
 # def _robotParser(url):
 #     # Create a RobotFileParser from urllib.parse
@@ -50,7 +72,7 @@ def extract_next_links(url, resp):
         pageText = soup.get_text(strip = True, separator = " ")
 
         # Extract the links from the webpage while being sure to defragment the URLs
-        links = [urldefrag(link.get("href")).url for link in soup.find_all("a")]
+        links = [removeFragmentAndQuery(link.get("href")) for link in soup.find_all("a")]
 
         # Check all the scraped links and check to see if they have a netloc/domain 
         # If they do not, then add the current URL's netloc/domain into the scraped link
@@ -80,8 +102,8 @@ def is_valid(url):
         #     return False
 
         # HARDCODED TRAP DETECTOR:
-        if url == "https://www.ics.uci.edu/community/alumni/index.php/stayconnected/stayconnected/index.php":
-            return False
+        # if url == "https://www.ics.uci.edu/alumni/stayconnected/stayconnected/index.php":
+        #     return False
 
         # Check if the url has been traversed already
         if url in VISITED_URLS:
@@ -90,6 +112,9 @@ def is_valid(url):
         # Check if the url has http or https at the beginning
         parsed = urlparse(url)
         if parsed.scheme not in set(["http", "https"]):
+            return False
+
+        if not checkForRepeatingPath(parsed):
             return False
 
         # This will make sure that URLs that download files are not 
@@ -102,7 +127,7 @@ def is_valid(url):
             + r"|data|dat|exe|bz2|tar|msi|bin|7z|psd|dmg|iso"
             + r"|epub|dll|cnf|tgz|sha1"
             + r"|thmx|mso|arff|rtf|jar|csv"
-            + r"|rm|smil|wmv|swf|wma|zip|rar|gz)$", parsed.path.lower()):
+            + r"|rm|smil|wmv|swf|wma|zip|rar|gz|ppsx)$", parsed.path.lower()):
             return False
 
 
