@@ -47,13 +47,10 @@ def extract_next_links(url, resp):
         # Parse the HTML content of the website using BeautifulSoup
         soup = BeautifulSoup(resp.raw_response.content, "html.parser")
 
+        pageText = soup.get_text(strip = True, separator = " ")
+
         # Extract the links from the webpage while being sure to defragment the URLs
         links = [urldefrag(link.get("href")).url for link in soup.find_all("a")]
-
-        # TODO: an issue is that some of the links are relative, need to add the original 
-        # netloc to it to get absolute URL
-        # For example: getting links from uci.ics.edu will extract links like "/about/about_deanmsg.php"
-        # Need to add the base url (the netloc) to it (DONE, not too sure)
 
         # Check all the scraped links and check to see if they have a netloc/domain 
         # If they do not, then add the current URL's netloc/domain into the scraped link
