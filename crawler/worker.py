@@ -15,7 +15,7 @@ from difflib import SequenceMatcher
 from urllib.parse import urlparse, urljoin, urldefrag
 
 
-def tokenize(response):
+def _tokenize(response):
     """
     Tokenize the passed html response.
     :param response: the web response.
@@ -60,11 +60,15 @@ class TrapNavigator:
         :param new_url: the url to check
         :return: True if the score is very high, false otherwise.
         """
+        # Maybe don't need? Just in case calling similarity_check for the first time
+        if self.last_url is None:
+            return False
+
         new_url_path = urlparse(new_url).path
         old_url_path = urlparse(self.last_url).path
         similarity_ratio = SequenceMatcher(None, new_url_path, old_url_path).ratio()
 
-        if similarity_ratio > 0.97:
+        if similarity_ratio > 0.97: # may need to lower?
             return True
         else:
             return False
@@ -116,10 +120,8 @@ class Results:
         match = re.match(subdomain_pattern, url)
         subdomain = match.group(1) if match else None
 
-        if subdomain in self.subdomains:
+        if subdomain:
             self.subdomains[subdomain] += 1
-        else:
-            self.subdomains[subdomain] = 1
 
     def add_unique_page(self, url) -> None:
         """
@@ -127,7 +129,7 @@ class Results:
         :param url: the url to add
         :return: void
         """
-        self.unique_pages.add(url.split("#")[0]) # can use urldefrag urldefrag(url).url
+        self.unique_pages.add(urldefrag(url).url) # can use urldefrag urldefrag(url).url instead of url.split("#")[0]
         self.add_subdomain(url)
 
     def update_longest_length(self, count) -> None:
@@ -157,10 +159,7 @@ class Results:
         """
         word = new_word.lower()
         if word not in self.stopwords:
-            if word in self.words:
-                self.words[word] += 1
-            else:
-                self.words[word] = 1
+            self.words[word] += 1
 
     def get_words(self) -> list:
         """
@@ -169,8 +168,11 @@ class Results:
         """
         sorted_dict = sorted(self.words.items(), key=lambda x: x[1], reverse=True)
 
-        for entry in sorted_dict:
-            print(entry[0] + " -> " + str(entry[1]))
+        # for entry in sorted_dict:
+        #     print(entry[0] + " -> " + str(entry[1]))
+
+        for word, count in sorted_dict:
+            print(word + " -> " + str(count))
 
         return sorted_dict
 
@@ -192,11 +194,17 @@ class Worker(Thread):
         self.config = config
         self.frontier = frontier
         # basic check for requests in scraper
-        assert {getsource(scraper).find(req) for req in {"from requests import", "import requests"}} == {-1}, "Do not use requests in scraper.py"
-        assert {getsource(scraper).find(req) for req in {"from urllib.request import", "import urllib.request"}} == {-1}, "Do not use urllib.request in scraper.py"
+        assert {getsource(scraper).find(req) for req in {"from requests import", "import requests"}} == {
+            -1}, "Do not use requests in scraper.py"
+        assert {getsource(scraper).find(req) for req in {"from urllib.request import", "import urllib.request"}} == {
+            -1}, "Do not use urllib.request in scraper.py"
         super().__init__(daemon=True)
-        
+
     def run(self):
+        # Initialize our classes
+        results = Results()
+        trap_navigator = TrapNavigator()
+
         while True:
             tbd_url = self.frontier.get_tbd_url()
             if not tbd_url:
@@ -206,8 +214,46 @@ class Worker(Thread):
             self.logger.info(
                 f"Downloaded {tbd_url}, status <{resp.status}>, "
                 f"using cache {self.config.cache_server}.")
+
             scraped_urls = scraper.scraper(tbd_url, resp)
+
+            # Tokenize the response.
+            tokens = _tokenize(resp)
+
+            # Add each token into the stored results.
+            for token in tokens:
+                results.add_word(token)
+
+            # Update the current longest page length.
+            results.update_longest_length(len(tokens))
+
+            # === TRAP DETECTION ===
+            # TODO: Test/make it work 
+            # TODO: See if we can make a hashmap/dictionary of checksums and their corresponding URLs
+            # TODO: then for each scraped URL, reference that hashmap and see if the checksum/hash already
+            # TODO: exists and then in that (similar) hashcode see if you can find a URL there?
+            # Ex: website.com's tokens/text gives checksum 100
+            # dict(100 : ["website.com"])
+            # imposter.com tokens/text gives checksum 100 as well, 
+            # since dict[100] exists, imposter.com is not added to our frontier 
+
+
+            # For each obtained url, check if each url was similar
+            # than the last
             for scraped_url in scraped_urls:
-                self.frontier.add_url(scraped_url)
+                if trap_navigator.check_for_traps(scraped_url):
+                    pass
+                else:
+                    self.frontier.add_url(scraped_url)
+                    trap_navigator.set_url(scraped_url)
             self.frontier.mark_url_complete(tbd_url)
+
+            # Debugging - Print word list length and current results.
+            # print(len(results.words))
+            # results.print_longest_length()
+            # print(resp.url)
+
             time.sleep(self.config.time_delay)
+
+        results.get_words()
+        results.print_longest_length()
