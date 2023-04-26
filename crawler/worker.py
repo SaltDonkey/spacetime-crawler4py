@@ -10,9 +10,16 @@ import tldextract
 
 from bs4 import BeautifulSoup
 from nltk.tokenize import RegexpTokenizer
+from difflib import SequenceMatcher
+from urllib.parse import urlparse
 
 
 def tokenize(response):
+    """
+    Tokenize the passed html response.
+    :param response: the web response.
+    :return:
+    """
     tokens = []
 
     if response.status == 200:
@@ -21,6 +28,46 @@ def tokenize(response):
         tokens = tokenizer.tokenize(soup.get_text())
 
     return tokens
+
+
+class TrapNavigator:
+    def __init__(self):
+        self.avoided_urls = []
+        self.last_url = None
+
+    def check_for_traps(self, url):
+        """
+        Run trap checks on the passed url.
+        :param url:
+        :return:
+        """
+        if self.similarity_check(url):
+            return True
+
+    def set_url(self, new_url):
+        """
+        Sets the last_url
+        :param new_url: the new url=
+        :return: None
+        """
+        self.last_url = new_url
+
+    def similarity_check(self, new_url):
+        """
+        Checks for similarity between the current url and the new url.
+        If the similarity score is too high, then return True.
+        :param new_url: the url to check
+        :return: True if the score is very high, false otherwise.
+        """
+        new_url_path = urlparse(new_url).path
+        old_url_path = urlparse(self.last_url).path
+        similarity_ratio = SequenceMatcher(None, new_url_path, old_url_path).ratio()
+
+        if similarity_ratio > 0.97:
+            return True
+        else:
+            return False
+
 
 class Results:
     def __init__(self):
@@ -36,7 +83,23 @@ class Results:
         self.longest_page_count = 0
         self.words = {}
         self.subdomains = {}
-        self.stopwords = ["a", "about", "above", "after", "again", "against", "all", "am", "an", "and", "any", "are", "aren't", "as", "at", "be", "because", "been", "before", "being", "below", "between", "both", "but", "by", "can't", "cannot", "could", "couldn't", "did", "didn't", "do", "does", "doesn't", "doing", "don't", "down", "during", "each", "few", "for", "from", "further", "had", "hadn't", "has", "hasn't", "have", "haven't", "having", "he", "he'd", "he'll", "he's", "her", "here", "here's", "hers", "herself", "him", "himself", "his", "how", "how's", "i", "i'd", "i'll", "i'm", "i've", "if", "in", "into", "is", "isn't", "it", "it's", "its", "itself", "let's", "me", "more", "most", "mustn't", "my", "myself", "no", "nor", "not", "of", "off", "on", "once", "only", "or", "other", "ought", "our", "ours	ourselves", "out", "over", "own", "same", "shan't", "she", "she'd", "she'll", "she's", "should", "shouldn't", "so", "some", "such", "than", "that", "that's", "the", "their", "theirs", "them", "themselves", "then", "there", "there's", "these", "they", "they'd", "they'll", "they're", "they've", "this", "those", "through", "to", "too", "under", "until", "up", "very", "was", "wasn't", "we", "we'd", "we'll", "we're", "we've", "were", "weren't", "what", "what's", "when", "when's", "where", "where's", "which", "while", "who", "who's", "whom", "why", "why's", "with", "won't", "would", "wouldn't", "you", "you'd", "you'll", "you're", "you've", "your", "yours", "yourself", "yourselves"]
+        self.stopwords = ["a", "about", "above", "after", "again", "against", "all", "am", "an", "and", "any", "are",
+                          "aren't", "as", "at", "be", "because", "been", "before", "being", "below", "between", "both",
+                          "but", "by", "can't", "cannot", "could", "couldn't", "did", "didn't", "do", "does", "doesn't",
+                          "doing", "don't", "down", "during", "each", "few", "for", "from", "further", "had", "hadn't",
+                          "has", "hasn't", "have", "haven't", "having", "he", "he'd", "he'll", "he's", "her", "here",
+                          "here's", "hers", "herself", "him", "himself", "his", "how", "how's", "i", "i'd", "i'll",
+                          "i'm", "i've", "if", "in", "into", "is", "isn't", "it", "it's", "its", "itself", "let's",
+                          "me", "more", "most", "mustn't", "my", "myself", "no", "nor", "not", "of", "off", "on",
+                          "once", "only", "or", "other", "ought", "our", "ours	ourselves", "out", "over", "own",
+                          "same", "shan't", "she", "she'd", "she'll", "she's", "should", "shouldn't", "so", "some",
+                          "such", "than", "that", "that's", "the", "their", "theirs", "them", "themselves", "then",
+                          "there", "there's", "these", "they", "they'd", "they'll", "they're", "they've", "this",
+                          "those", "through", "to", "too", "under", "until", "up", "very", "was", "wasn't", "we",
+                          "we'd", "we'll", "we're", "we've", "were", "weren't", "what", "what's", "when", "when's",
+                          "where", "where's", "which", "while", "who", "who's", "whom", "why", "why's", "with", "won't",
+                          "would", "wouldn't", "you", "you'd", "you'll", "you're", "you've", "your", "yours",
+                          "yourself", "yourselves"]
 
     def add_subdomain(self, url) -> None:
         """
@@ -98,7 +161,7 @@ class Results:
             else:
                 self.words[word] = 1
 
-    def get_words(self) -> dict:
+    def get_words(self) -> list:
         """
         Sorts the dict by most frequent word first, then returns it.
         :return: the sorted dictionary of words.
@@ -136,6 +199,7 @@ class Worker(Thread):
 
     def run(self):
         results = Results()
+        trap_navigator = TrapNavigator()
 
         while True:
             tbd_url = self.frontier.get_tbd_url()
@@ -160,15 +224,19 @@ class Worker(Thread):
             results.update_longest_length(len(tokens))
 
             for scraped_url in scraped_urls:
-                self.frontier.add_url(scraped_url)
+                if trap_navigator.check_for_traps(scraped_url):
+                    pass
+                else:
+                    self.frontier.add_url(scraped_url)
+                    trap_navigator.set_url(scraped_url)
             self.frontier.mark_url_complete(tbd_url)
 
             # Debugging - Print word list length and current results.
-            print(len(results.words))
-            results.print_longest_length()
+            # print(len(results.words))
+            # results.print_longest_length()
+            # print(resp.url)
 
             time.sleep(self.config.time_delay)
 
-        # results.get_words()
-        # results.print_longest_length()
-
+        results.get_words()
+        results.print_longest_length()
