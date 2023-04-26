@@ -23,11 +23,14 @@ def _tokenize(response):
     """
     tokens = []
 
-    if response.status == 200:
-        soup = BeautifulSoup(response.raw_response.content, "lxml")
-        tokenizer = RegexpTokenizer(r'\w+')
-        tokens = tokenizer.tokenize(soup.get_text())
-
+    try:
+        if response.status == 200:
+            soup = BeautifulSoup(response.raw_response.content, "lxml")
+            tokenizer = RegexpTokenizer(r'\w+')
+            tokens = tokenizer.tokenize(soup.get_text())
+    except AttributeError:
+        pass
+        
     return tokens
 
 
