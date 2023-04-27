@@ -47,22 +47,27 @@ def extract_next_links(url, resp):
         VISITED_URLS.add(url)
 
         # Parse the HTML content of the website using BeautifulSoup
-        soup = BeautifulSoup(resp.raw_response.content, "html.parser")
 
-        # Extract the links from the webpage while being sure to defragment the URLs
-        links = [urldefrag(link.get("href")).url for link in soup.find_all("a")]
+        try:
+            soup = BeautifulSoup(resp.raw_response.content, "html.parser")
 
-        # TODO: an issue is that some of the links are relative, need to add the original 
-        # netloc to it to get absolute URL
-        # For example: getting links from uci.ics.edu will extract links like "/about/about_deanmsg.php"
-        # Need to add the base url (the netloc) to it (DONE, not too sure)
+            # Extract the links from the webpage while being sure to defragment the URLs
+            links = [urldefrag(link.get("href")).url for link in soup.find_all("a")]
 
-        # Check all the scraped links and check to see if they have a netloc/domain 
-        # If they do not, then add the current URL's netloc/domain into the scraped link
-        for i in range(len(links)):
-            parsed = urlparse(links[i])
-            if not parsed.netloc and parsed.path:
-                links[i] = urljoin(url, links[i])
+            # TODO: an issue is that some of the links are relative, need to add the original
+            # netloc to it to get absolute URL
+            # For example: getting links from uci.ics.edu will extract links like "/about/about_deanmsg.php"
+            # Need to add the base url (the netloc) to it (DONE, not too sure)
+
+            # Check all the scraped links and check to see if they have a netloc/domain
+            # If they do not, then add the current URL's netloc/domain into the scraped link
+            for i in range(len(links)):
+                parsed = urlparse(links[i])
+                if not parsed.netloc and parsed.path:
+                    links[i] = urljoin(url, links[i])
+        except AttributeError:
+            print("No content found.")
+
 
     return links
 
@@ -98,10 +103,10 @@ def is_valid(url):
             r".*.(css|js|bmp|gif|jpe?g|ico"
             + r"|png|tiff?|mid|mp2|mp3|mp4"
             + r"|wav|avi|mov|mpeg|ram|m4v|mkv|ogg|ogv|pdf"
-            + r"|ps|eps|tex|ppt|pptx|doc|docx|xls|xlsx|names"
+            + r"|ps|eps|tex|ppsx|jpg|war|ppt|pptx|doc|docx|xls|xlsx|names"
             + r"|data|dat|exe|bz2|tar|msi|bin|7z|psd|dmg|iso"
             + r"|epub|dll|cnf|tgz|sha1"
-            + r"|thmx|mso|arff|rtf|jar|csv"
+            + r"|thmx|mso|arff|rtf|jar|csv|"
             + r"|rm|smil|wmv|swf|wma|zip|rar|gz)$", parsed.path.lower()):
             return False
 
