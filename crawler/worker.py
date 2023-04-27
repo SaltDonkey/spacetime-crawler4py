@@ -7,16 +7,18 @@ import scraper
 import time
 import re
 import tldextract
+import json
+import signal, sys
+
 import numpy as np
-
-
+from collections import defaultdict
 from numpy.linalg import norm
 from bs4 import BeautifulSoup
 from nltk.tokenize import RegexpTokenizer
 from difflib import SequenceMatcher
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urldefrag
 from simhash import Simhash
-
+from datetime import datetime
 
 def tokenize(response):
     """
@@ -25,7 +27,6 @@ def tokenize(response):
     :return:
     """
     tokens = []
-
     if response.status == 200:
         try:
             soup = BeautifulSoup(response.raw_response.content, "lxml")
@@ -37,14 +38,14 @@ def tokenize(response):
     return tokens
 
 
-
+	
 class TrapNavigator:
     def __init__(self):
         # self.avoided_urls = []
         # self.last_url = None
         self.token_hashes = {}
         self.url_hashes = {}
-
+        
     def check_for_traps(self, url, tokens, results):
         """
         Run trap checks on the passed url.
@@ -72,14 +73,14 @@ class TrapNavigator:
         """
         url_simhash = Simhash(new_url).value
         token_simhash = Simhash(tokens).value
-
+        
         # If the new_url's simhash is similar to anything we have stored
         if self.simhash_comparison_url(new_url, url_simhash):
             # If the tokens of one page is similar to the tokens of the new url,
             # return True, they are similar
             if self.simhash_comparison_tokens(new_url, token_simhash):
                 return True
-
+        
         return False
 
     def simhash_comparison_url(self, new_url, new_url_hash):
@@ -90,7 +91,8 @@ class TrapNavigator:
         :return: True if similarity threshold is passed.
         """
         for stored_hash in self.url_hashes.keys():
-            if new_url_hash.distance(self.url_hashes[stored_hash]) < 3:
+            # If absolute value of the new_url_hash - url_hashes[stored_hash] is less than 3
+            if abs(new_url_hash - self.url_hashes[stored_hash]) < 3:
                 return True
         self.add_hash_url(new_url, new_url_hash)
         return False
@@ -104,12 +106,13 @@ class TrapNavigator:
         :return: True if similar enough simhash found.
         """
         for url in self.token_hashes.keys():
-            if self.hashes[url].distance(token_hash) < 3:
+            # If absolute value of the hashes[url] - token_hash is less than 3
+            if abs(self.token_hashes[url] - token_hash) < 3:
                 return True
         self.add_hash_tokens(new_url, token_hash)
         return False
 
-    def known_traps(self, new_url, results: Results):
+    def known_traps(self, new_url, results):
         """
         Checks for known traps.
         :param new_url: the url to check.
@@ -119,6 +122,16 @@ class TrapNavigator:
         if "https://wiki.ics.uci.edu/doku.php" in new_url:
             results.add_subdomain(new_url)
             return True
+        if "http://www.informatics.uci.edu/files/pdf/InformaticsBrochure-March2018" in new_url:
+            results.add_subdomain(new_url)
+            return True
+        if "http://www.ics.uci.edu/ugrad/current/policies/index.php" in new_url:
+            results.add_subdomain(new_url)
+            return True
+        if "https://www.ics.uci.edu/ugrad/policies/index.php" in new_url:
+            results.add_subdomain(new_url)
+            return True
+
 
     def add_hash_url(self, new_url, new_url_hash):
         """
@@ -138,6 +151,7 @@ class TrapNavigator:
         """
         self.token_hashes[new_url] = token_hash
 
+
 class Results:
     def __init__(self):
         """
@@ -150,6 +164,7 @@ class Results:
         """
         self.unique_pages = set()
         self.longest_page_count = 0
+        self.longest_page = ""
         self.words = defaultdict(int)
         self.subdomains = defaultdict(int)
         self.stopwords = ["a", "about", "above", "after", "again", "against", "all", "am", "an", "and", "any", "are",
@@ -185,30 +200,21 @@ class Results:
         subdomain = match.group(1) if match else None
 
         if subdomain:
-            self.subdomains[subdomain] += 1
+            if subdomain in self.subdomains:
+                self.subdomains[subdomain] += 1
+            else:
+                self.subdomains[subdomain] = 1
 
     def add_unique_page(self, url) -> None:
         """
-        Adds an url to the set of unique pages.
+        Adds a url to the set of unique pages.
         :param url: the url to add
         :return: void
         """
         self.unique_pages.add(urldefrag(url).url) # can use urldefrag urldefrag(url).url instead of url.split("#")[0]
         self.add_subdomain(url)
 
-    def check_page(self, url) -> bool:
-        """
-        Checks if an url is already stored.
-        :param url: the url to check.
-        :return: True if it is already stored.
-        """
-
-        if url in self.unique_pages:
-            return True
-        else:
-            return False
-
-    def update_longest_length(self, count) -> None:
+    def update_longest_length(self, count, url) -> None:
         """
         Updates the current longest page length, if the
         passed length is greater.
@@ -217,6 +223,7 @@ class Results:
         """
         if count > self.longest_page_count:
             self.longest_page_count = count
+            self.longest_page = url
 
     def print_longest_length(self) -> None:
         """
@@ -235,19 +242,24 @@ class Results:
         """
         word = new_word.lower()
         if word not in self.stopwords:
-            self.words[word] += 1
+            if word in self.words:
+                self.words[word] = self.words[word] + 1
+            else:
+                self.words[word] = 1
+        else:
+            pass
 
-    def get_words(self):
+    def get_words(self) -> list:
         """
         Sorts the dict by most frequent word first, then returns it.
         :return: the sorted dictionary of words.
         """
         sorted_dict = sorted(self.words.items(), key=lambda x: x[1], reverse=True)
 
-        # for word, count in sorted_dict:
-        #     print(word + " -> " + str(count))
+        for word, count in sorted_dict:
+            print(word + " -> " + str(count))
 
-        file = open("output.txt", 'w')
+        file = open("words.txt", 'w')
 
         for word, count in sorted_dict:
             file.write(word + " -> " + str(count))
@@ -255,7 +267,7 @@ class Results:
         file.close()
         return sorted_dict
 
-    def get_subdomains(self):
+    def get_subdomains(self) -> dict:
         """
         Returns the list of subdomains.
         :return: the dictionary of subdomains.
@@ -265,121 +277,95 @@ class Results:
         #     print(subdomain + " -> " + str(self.subdomains[subdomain]))
         sorted_dict = sorted(self.subdomains.items(), key=lambda x: (x[1], x[0]), reverse=True)
 
-        file = open("output.txt", 'w')
+        file = open("subdomains.txt", 'w')
 
         for subdomain in sorted_dict:
             file.write(subdomain + " -> " + str(self.subdomains[subdomain]))
 
         file.close()
 
+        return self.subdomains
 
-
-class TrapNavigator:
-    def __init__(self):
-        self.avoided_urls = []
-        self.last_url = None
-        self.token_hashes = {}
-        self.url_hashes = {}
-
-    def check_for_traps(self, url, tokens, results):
+    def print_subdomains(self) -> None:
         """
-        Run trap checks on the passed url.
-        :param url: the url to check
-        :param tokens: the tokens of the url to check
-        :param results: the results object
-        :return:
+        Writes the subdomains to file.
         """
-        if self.known_traps(url, results):
-            return True
-        elif self.similarity_check(url, tokens):
-            return True
-        else:
-            return False
+        sorted_dict = sorted(self.subdomains.items(), key=lambda x: x[1], reverse=True)
 
-    def similarity_check(self, new_url, tokens):
+        file = open("subdomainOutput.txt", 'w')
+
+        for line in sorted_dict:
+            file.write(line[0] + " -> " + str(line[1]) + "\n")
+
+    def print_words(self) -> None:
         """
-        Checks for similarity between the current url and the new url.
-        If the similarity score is too high, then return True.
-        :param new_url: the url to check
-        :param tokens: the tokens of the url to check
-        :return: True if the score is very high, false otherwise.
+        Writes the words to file.
         """
+        # sorted_dict = sorted(self.words.items(), key=lambda x: x[1], reverse=True)
+        #
+        # file = open("subdomainOutput.txt", 'w')
+        #
+        # for line in sorted_dict:
+        #     file.write(line)
+        sorted_dict = sorted(self.words.items(), key=lambda x: x[1], reverse=True)
 
-        url_simhash = Simhash(new_url).value
-        token_simhash = Simhash(tokens).value
+        file = open("words.txt", 'w')
 
-        if self.simhash_comparison_url(new_url, url_simhash):
-            if self.simhash_comparison_tokens(new_url, token_simhash):
-                return True
+        for line in sorted_dict:
+            file.write(line[0] + " -> " + str(line[1]) + "\n")
 
-    def simhash_comparison_url(self, new_url, new_url_hash):
-        """
-        Compares the simhash comparison of a given URL with previously hashed URLs.
-        :param new_url: the url to compare
-        :param new_url_hash: the hashed url to compare
-        :return: True if similarity threshold is passed.
-        """
+        file.write("Longest page: " + self.longest_page + "\n")
+        file.write("Longest length: " + str(self.longest_page_count))
 
-        for stored_hash in self.url_hashes.keys():
-            if new_url_hash.distance(self.url_hashes[stored_hash]) < 3:
-                return True
+    def export_word_json(self):
+        with open("wordJSON.json", "w") as outfile:
+            json.dump(self.words, outfile)
 
-        self.add_hash_url(new_url, new_url_hash)
-        return False
+        outfile.close()
 
-    def add_hash_url(self, new_url, new_url_hash):
-        """
-        Adds a hash of the new url to the dictionary of hashed urls.
-        :param new_url: the url store
-        :param new_url_hash: hash of the url
-        :return:
-        """
+    def import_word_json(self):
+        infile = open("wordJSON.json", "r")
+        self.words = json.load(infile)
 
-        self.url_hashes[new_url] = new_url_hash
+        infile.close()
 
-    def simhash_comparison_tokens(self, new_url, token_hash):
-        """
-        Goes through the list of previously calculated sim hashes.
-        If it detects a similar simhash, return True.
-        :param new_url: url to compare to previously hashed websites.
-        :param token_hash: the hash of tokens of the url to compare to previously hashed websites.
-        :return: True if similar enough simhash found.
-        """
+    def export_subdomain_json(self):
+        with open("subdomainJSON.json", "w") as outfile:
+            json.dump(self.subdomains, outfile)
 
-        for url in self.token_hashes.keys():
-            if self.hashes[url].distance(token_hash) < 3:
-                return True
+        outfile.close()
 
-        self.add_hash_tokens(new_url, token_hash)
-        return False
+    def import_subdomain_json(self):
+        infile = open("subdomainJSON.json", "r")
+        self.subdomains = json.load(infile)
 
-    def add_hash_tokens(self, new_url, token_hash):
-        """
-        Adds a url and its token hash.
-        :param new_url: the url to add
-        :param token_hash: a hash of a tokenized list of words.
-        :return: void
-        """
+        infile.close()
 
-        self.token_hashes[new_url] = token_hash
+    def export_site_json(self):
+        with open("siteJSON.json", "w") as outfile:
+            json.dump(list(self.unique_pages), outfile)
 
-    def known_traps(self, new_url, results: Results):
-        """
-        Checks for known traps.
-        :param new_url: the url to check.
-        :param results: the results object to update if a trap domain is located.
-        :return:
-        """
+        outfile.close()
 
-        if len(re.findall(r'/stayconnected/', new_url)) > 3:
-            return True
+    def import_site_json(self):
+        infile = open("siteJSON.json", "r")
+        self.unique_pages = set(json.load(infile))
 
-        if len(re.findall(r'/computing/', new_url)) > 3:
-            return True
+        infile.close()
 
-        if "https://wiki.ics.uci.edu/doku.php" in new_url:
-            results.add_subdomain(new_url)
-            return True
+    def export_log(self):
+        infile = open("log.txt", 'a')
+        infile.write(str(self.longest_page_count) + " " + str(datetime.now()) + "\n")
+
+    def export_longest(self):
+        outfile = open("longest.txt", 'w')
+        outfile.write(self.longest_page + "\n")
+        outfile.write(str(self.longest_page_count))
+
+    def import_longest(self):
+        infile = open("longest.txt", 'r')
+        self.longest_page = infile.readline()
+        self.longest_page_count = int(infile.readline())
 
 
 class Worker(Thread):
@@ -399,7 +385,14 @@ class Worker(Thread):
         results = Results()
         trap_navigator = TrapNavigator()
 
+        results.import_subdomain_json()
+        results.import_word_json()
+        results.import_longest()
+
+        results.export_log()
+
         while True:
+
             tbd_url = self.frontier.get_tbd_url()
             if not tbd_url:
                 self.logger.info("Frontier is empty. Stopping Crawler.")
@@ -412,32 +405,38 @@ class Worker(Thread):
             scraped_urls = scraper.scraper(tbd_url, resp)
 
             # Tokenize the response.
-            tokens = _tokenize(resp)
+            # print(tbd_url)
+            tokens = tokenize(resp)
+            # print(Simhash(tokens).value)
 
             # Add each token into the stored results.
             for token in tokens:
-                results.add_word(token)
+                results.add_word(token.lower())
 
             # Update the current longest page length.
-            results.update_longest_length(len(tokens))
+            results.update_longest_length(len(tokens), tbd_url)
 
             # For each obtained url, check if each url was similar
             # than the last
             for scraped_url in scraped_urls:
-                if results.check_page(scraped_url) or trap_navigator.check_for_traps(scraped_url, tokens):
+                if trap_navigator.check_for_traps(scraped_url, tokens, results) and scraped_url not in results.unique_pages:
                     pass
                 else:
                     self.frontier.add_url(scraped_url)
-                    trap_navigator.set_url(scraped_url)
-                    trap_navigator.add_hash(scraped_url)
+                    results.add_unique_page(scraped_url)
             self.frontier.mark_url_complete(tbd_url)
-
-            print(trap_navigator.url_hashes)
 
             # Debugging - Print word list length and current results.
             # print(len(results.words))
             # results.print_longest_length()
-            # print(resp.url)
+
+            results.print_subdomains()
+            results.print_words()
+            results.export_subdomain_json()
+            results.export_word_json()
+            results.export_longest()
+
+
 
             time.sleep(self.config.time_delay)
 
