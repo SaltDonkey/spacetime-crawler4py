@@ -106,11 +106,5 @@ venv.bak/
 # vscode
 .vscode/
 
-*.full.py
-*.shelve
-crawler/__init__.py
-crawler/__init__.py
-crawler/__init__.py
 README.md
 packages/requirements.txt
-*.py
