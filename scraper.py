@@ -11,20 +11,6 @@ def scraper(url, resp):
     links = extract_next_links(url, resp)
     return [link for link in links if is_valid(link)]
 
-def checkForRepeatingPath(parsedUrl):
-    # Take our path and split them into a list to get each path argument
-    # We do [1:] to omit the first "/"
-    pathArgs = parsedUrl.path[1:].split("/")
-    # Make a Counter of all separate path argument
-    pathArgsCounter = Counter(pathArgs)
-
-    # If any argument is repeated 3 or more times, we (most likely) have detected
-    # a trap, exit and don't crawl
-    for _, value in pathArgsCounter.most_common(3):
-        if value >= 3:
-            return False
-    return True
-
 def removeFragmentAndQuery(url):
     """
     Removes the query and fragment section from the given url
@@ -101,10 +87,6 @@ def is_valid(url):
         # if not rp.can_fetch("*", url):
         #     return False
 
-        # HARDCODED TRAP DETECTOR:
-        # if url == "https://www.ics.uci.edu/alumni/stayconnected/stayconnected/index.php":
-        #     return False
-
         # Check if the url has been traversed already
         if url in VISITED_URLS:
             return False
@@ -114,7 +96,7 @@ def is_valid(url):
         if parsed.scheme not in set(["http", "https"]):
             return False
 
-        if not checkForRepeatingPath(parsed):
+        if checkForRepeatingPath(parsed):
             return False
 
         # This will make sure that URLs that download files are not 
