@@ -54,25 +54,37 @@ def extract_next_links(url, resp):
         VISITED_URLS.add(url)
 
         # Parse the HTML content of the website using BeautifulSoup
-        soup = BeautifulSoup(resp.raw_response.content, "html.parser")
 
         pageText = soup.get_text(strip = True, separator = " ")
 
         # Extract the links from the webpage while being sure to defragment the URLs
         links = [removeFragmentAndQuery(link.get("href")) for link in soup.find_all("a")]
 
-        # Check all the scraped links and check to see if they have a netloc/domain 
-        # If they do not, then add the current URL's netloc/domain into the scraped link
-        for i in range(len(links)):
-            parsed = urlparse(links[i])
-            if not parsed.netloc and parsed.path:
-                links[i] = urljoin(url, links[i])
+        try:
+            soup = BeautifulSoup(resp.raw_response.content, "html.parser")
+
+            # Extract the links from the webpage while being sure to defragment the URLs
+            links = [urldefrag(link.get("href")).url for link in soup.find_all("a")]
+
+            # TODO: an issue is that some of the links are relative, need to add the original
+            # netloc to it to get absolute URL
+            # For example: getting links from uci.ics.edu will extract links like "/about/about_deanmsg.php"
+            # Need to add the base url (the netloc) to it (DONE, not too sure)
+
+            # Check all the scraped links and check to see if they have a netloc/domain
+            # If they do not, then add the current URL's netloc/domain into the scraped link
+            for i in range(len(links)):
+                parsed = urlparse(links[i])
+                if not parsed.netloc and parsed.path:
+                    links[i] = urljoin(url, links[i])
+        except AttributeError:
+            print("No content found.")
 
     return links
 
 
 def is_valid(url):
-    # Decide whether to crawl this url or not. 
+    # Decide whether to crawl this url or not.
     # If you decide to crawl it, return True; otherwise return False.
     # There are already some conditions that return False.
 
@@ -101,13 +113,13 @@ def is_valid(url):
         if checkForRepeatingPath(parsed):
             return False
 
-        # This will make sure that URLs that download files are not 
+        # This will make sure that URLs that download files are not
         # considered to be valid
         if re.match(
             r".*.(css|js|bmp|gif|jpe?g|ico"
             + r"|png|tiff?|mid|mp2|mp3|mp4"
             + r"|wav|avi|mov|mpeg|ram|m4v|mkv|ogg|ogv|pdf"
-            + r"|ps|eps|tex|ppt|pptx|doc|docx|xls|xlsx|names"
+            + r"|ps|eps|tex|ppsx|jpg|war|ppt|pptx|doc|docx|xls|xlsx|names"
             + r"|data|dat|exe|bz2|tar|msi|bin|7z|psd|dmg|iso"
             + r"|epub|dll|cnf|tgz|sha1"
             + r"|thmx|mso|arff|rtf|jar|csv"
