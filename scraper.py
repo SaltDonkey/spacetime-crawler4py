@@ -1,5 +1,6 @@
 import re
 from bs4 import BeautifulSoup
+from collections import Counter
 from urllib.robotparser import RobotFileParser
 from urllib.parse import urlparse, urljoin, urldefrag
 
@@ -10,6 +11,12 @@ VISITED_URLS = set()
 def scraper(url, resp):
     links = extract_next_links(url, resp)
     return [link for link in links if is_valid(link)]
+
+def removeFragmentAndQuery(url):
+    """
+    Removes the query and fragment section from the given url
+    """
+    return urljoin(url, urlparse(url).path)
 
 
 # def _robotParser(url):
@@ -49,13 +56,10 @@ def extract_next_links(url, resp):
         # Parse the HTML content of the website using BeautifulSoup
         soup = BeautifulSoup(resp.raw_response.content, "html.parser")
 
-        # Extract the links from the webpage while being sure to defragment the URLs
-        links = [urldefrag(link.get("href")).url for link in soup.find_all("a")]
+        pageText = soup.get_text(strip = True, separator = " ")
 
-        # TODO: an issue is that some of the links are relative, need to add the original 
-        # netloc to it to get absolute URL
-        # For example: getting links from uci.ics.edu will extract links like "/about/about_deanmsg.php"
-        # Need to add the base url (the netloc) to it (DONE, not too sure)
+        # Extract the links from the webpage while being sure to defragment the URLs
+        links = [removeFragmentAndQuery(link.get("href")) for link in soup.find_all("a")]
 
         # Check all the scraped links and check to see if they have a netloc/domain 
         # If they do not, then add the current URL's netloc/domain into the scraped link
@@ -94,6 +98,11 @@ def is_valid(url):
         if parsed.scheme not in set(["http", "https"]):
             return False
 
+        if checkForRepeatingPath(parsed):
+            return False
+
+        # This will make sure that URLs that download files are not 
+        # considered to be valid
         if re.match(
             r".*.(css|js|bmp|gif|jpe?g|ico"
             + r"|png|tiff?|mid|mp2|mp3|mp4"
@@ -102,7 +111,7 @@ def is_valid(url):
             + r"|data|dat|exe|bz2|tar|msi|bin|7z|psd|dmg|iso"
             + r"|epub|dll|cnf|tgz|sha1"
             + r"|thmx|mso|arff|rtf|jar|csv"
-            + r"|rm|smil|wmv|swf|wma|zip|rar|gz)$", parsed.path.lower()):
+            + r"|rm|smil|wmv|swf|wma|zip|rar|gz|ppsx)$", parsed.path.lower()):
             return False
 
 
