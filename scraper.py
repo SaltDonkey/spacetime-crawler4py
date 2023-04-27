@@ -12,6 +12,20 @@ def scraper(url, resp):
     links = extract_next_links(url, resp)
     return [link for link in links if is_valid(link)]
 
+def checkForRepeatingPath(parsedUrl):
+    # Take our path and split them into a list to get each path argument
+    # We do [1:] to omit the first "/"
+    pathArgs = parsedUrl.path[1:].split("/")
+    # Make a Counter of all separate path argument
+    pathArgsCounter = Counter(pathArgs)
+
+    # If any argument is repeated 3 or more times, we (most likely) have detected
+    # a trap, exit and don't crawl
+    for _, value in pathArgsCounter.most_common():
+        if value >= 3:
+            return True
+    return False
+
 def removeFragmentAndQuery(url):
     """
     Removes the query and fragment section from the given url

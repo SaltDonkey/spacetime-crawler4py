@@ -9,6 +9,7 @@ import re
 import tldextract
 
 import numpy as np
+from collections import defaultdict
 from numpy.linalg import norm
 from bs4 import BeautifulSoup
 from nltk.tokenize import RegexpTokenizer
@@ -87,7 +88,8 @@ class TrapNavigator:
         :return: True if similarity threshold is passed.
         """
         for stored_hash in self.url_hashes.keys():
-            if new_url_hash.distance(self.url_hashes[stored_hash]) < 3:
+            # If absolute value of the new_url_hash - url_hashes[stored_hash] is less than 3
+            if abs(new_url_hash - self.url_hashes[stored_hash]) < 3:
                 return True
         self.add_hash_url(new_url, new_url_hash)
         return False
@@ -101,12 +103,13 @@ class TrapNavigator:
         :return: True if similar enough simhash found.
         """
         for url in self.token_hashes.keys():
-            if self.hashes[url].distance(token_hash) < 3:
+            # If absolute value of the hashes[url] - token_hash is less than 3
+            if abs(self.token_hashes[url] - token_hash) < 3:
                 return True
         self.add_hash_tokens(new_url, token_hash)
         return False
 
-    def known_traps(self, new_url, results: Results):
+    def known_traps(self, new_url, results):
         """
         Checks for known traps.
         :param new_url: the url to check.
@@ -230,10 +233,10 @@ class Results:
         """
         sorted_dict = sorted(self.words.items(), key=lambda x: x[1], reverse=True)
 
-        # for word, count in sorted_dict:
-        #     print(word + " -> " + str(count))
+        for word, count in sorted_dict:
+            print(word + " -> " + str(count))
 
-        file = open("output.txt", 'w')
+        file = open("words.txt", 'w')
 
         for word, count in sorted_dict:
             file.write(word + " -> " + str(count))
@@ -251,7 +254,7 @@ class Results:
         #     print(subdomain + " -> " + str(self.subdomains[subdomain]))
         sorted_dict = sorted(self.subdomains.items(), key=lambda x: (x[1], x[0]), reverse=True)
 
-        file = open("output.txt", 'w')
+        file = open("subdomains.txt", 'w')
 
         for subdomain in sorted_dict:
             file.write(subdomain + " -> " + str(self.subdomains[subdomain]))
@@ -291,7 +294,7 @@ class Worker(Thread):
             scraped_urls = scraper.scraper(tbd_url, resp)
 
             # Tokenize the response.
-            tokens = _tokenize(resp)
+            tokens = tokenize(resp)
 
             # Add each token into the stored results.
             for token in tokens:
@@ -303,11 +306,10 @@ class Worker(Thread):
             # For each obtained url, check if each url was similar
             # than the last
             for scraped_url in scraped_urls:
-                if trap_navigator.check_for_traps(scraped_url):
+                if trap_navigator.check_for_traps(scraped_url, tokens, results):
                     pass
                 else:
                     self.frontier.add_url(scraped_url)
-                    trap_navigator.set_url(scraped_url)
             self.frontier.mark_url_complete(tbd_url)
 
             # Debugging - Print word list length and current results.
