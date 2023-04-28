@@ -2,6 +2,7 @@ import re
 import url_normalize
 import math
 import mmh3
+from functools import lru_cache
 from bs4 import BeautifulSoup
 from collections import Counter
 from urllib.robotparser import RobotFileParser
@@ -85,27 +86,50 @@ def checkForRepeatingPath(parsedUrl):
 #     # Return the object
 #     return robotTxtParser
 
+#Cache normalize_url to avoid calling multiple times on same url
+@lru_cache(maxsize=None)
+def normalizeURL(url):
+    return url_normalize.url_normalize(url)
+
 def extract_next_links(url, resp):
-    links = set()
     # Check if response status code is 200 first, otherwise it will not be accessible
-    if resp.status == 200:
-        VISITED_URLS.add(url)
+    if resp.status != 200:
+        return set()
+    VISITED_URLS.add(url)
+
+    #To stop error in case of invalid url
+    try:
         # Parse the HTML content of the website using BeautifulSoup
         soup = BeautifulSoup(resp.raw_response.content, "html.parser")
 
         # Extract the links from the webpage while being sure to defragment the URLs
-        for link in soup.find_all("a"):
-            href = link.get("href")
-            if href:
-                href = url_normalize.url_normalize(href)
-                href = urldefrag(href)[0]
-                # Check all the scraped links and check to see if they have a netloc/domain 
-                parsed = urlparse(href)
-                if not parsed.netloc and parsed.path:
-                    href = urljoin(url, href)
-                links.add(href)
+        links = {urldefrag(normalizeURL(link.get("href")))[0] if link.get("href") else "" for link in soup.find_all("a")}
 
-    return links
+        # Check all the scraped links and check to see if they have a netloc/domain 
+        return {urljoin(url, link) for link in links if urlparse(link).netloc or not urlparse(link).path}
+
+    except:
+        return set()
+    # links = set()
+    # # Check if response status code is 200 first, otherwise it will not be accessible
+    # if resp.status == 200:
+    #     VISITED_URLS.add(url)
+    #     # Parse the HTML content of the website using BeautifulSoup
+    #     soup = BeautifulSoup(resp.raw_response.content, "html.parser")
+
+    #     # Extract the links from the webpage while being sure to defragment the URLs
+    #     for link in soup.find_all("a"):
+    #         href = link.get("href")
+    #         if href:
+    #             href = normalizeURL(href)
+    #             href = urldefrag(href)[0]
+    #             # Check all the scraped links and check to see if they have a netloc/domain 
+    #             parsed = urlparse(href)
+    #             if not parsed.netloc and parsed.path:
+    #                 href = urljoin(url, href)
+    #             links.add(href)
+
+    # return links
 
 
 def is_valid(url):
@@ -127,30 +151,33 @@ def is_valid(url):
         #     return False
 
         # Check if the url has been traversed already
-        if url in VISITED_URLS:
-            return False
+        #Because a bloom filter has a chance of false positives but not false negatives
+        if url not in VISITED_URLS:
 
-        # Check if the url has http or https at the beginning
-        parsed = urlparse(url)
-        if parsed.scheme not in set(["http", "https"]):
-            return False
+            # Check if the url has http or https at the beginning
+            parsed = urlparse(url)
+            if parsed.scheme not in set(["http", "https"]):
+                return False
 
-        if checkForRepeatingPath(parsed):
-            return False
+            if checkForRepeatingPath(parsed):
+                return False
 
-        # This will make sure that URLs that download files are not 
-        # considered to be valid
-        if EXCLUDE_PATTERN.match(parsed.path.lower()):
-            return False
+            # This will make sure that URLs that download files are not 
+            # considered to be valid
+            if EXCLUDE_PATTERN.match(parsed.path.lower()):
+                return False
 
 
-        # The regex string will account for all URLs in this form:
-        # *.ics.uci.edu/*
-        # *.cs.uci.edu/*
-        # *.informatics.uci.edu/*
-        # *.stat.uci.edu/*
-        # Overall match string is r".*\.(ics|cs|informatics|stat)\.uci\.edu$"
-        return True if REGEX_PATTERN.match(parsed.netloc.lower()) else False
+            # The regex string will account for all URLs in this form:
+            # *.ics.uci.edu/*
+            # *.cs.uci.edu/*
+            # *.informatics.uci.edu/*
+            # *.stat.uci.edu/*
+            # Overall match string is r".*\.(ics|cs|informatics|stat)\.uci\.edu$"
+            if REGEX_PATTERN.match(parsed.netloc.lower()):
+                return True
+        
+        return False
 
 
     except TypeError:
