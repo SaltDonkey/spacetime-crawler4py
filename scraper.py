@@ -7,9 +7,30 @@ from urllib.parse import urlparse, urljoin, urldefrag
 REGEX_PATTERN = r".*\.(ics|cs|informatics|stat)\.uci\.edu$"
 VISITED_URLS = set()
 
+
 def scraper(url, resp):
     links = extract_next_links(url, resp)
     return [link for link in links if is_valid(link)]
+
+def checkForRepeatingPath(parsedUrl):
+    # Take our path and split them into a list to get each path argument
+    # We do [1:] to omit the first "/"
+    pathArgs = parsedUrl.path[1:].split("/")
+    # Make a Counter of all separate path argument
+    pathArgsCounter = Counter(pathArgs)
+
+    # If any argument is repeated 3 or more times, we (most likely) have detected
+    # a trap, exit and don't crawl
+    for _, value in pathArgsCounter.most_common():
+        if value >= 3:
+            return True
+    return False
+
+def checkURLForEmail(url):
+    emailPattern = re.compile(r".*@(uci.edu|ics.uci.edu)")
+    matching = re.match(emailPattern, url)
+
+    return True if matching else False
 
 def removeFragmentAndQuery(url):
     """
@@ -41,7 +62,7 @@ def extract_next_links(url, resp):
     #         resp.raw_response.url: the url, again
     #         resp.raw_response.content: the content of the page!
     # Return a list with the hyperlinks (as strings) scrapped from resp.raw_response.content
-    
+
     # TODO: Can detect redirect by comparing url and resp.url?
 
     # Initialize list of links
@@ -69,6 +90,7 @@ def extract_next_links(url, resp):
 
     return links
 
+
 def is_valid(url):
     # Decide whether to crawl this url or not. 
     # If you decide to crawl it, return True; otherwise return False.
@@ -89,6 +111,13 @@ def is_valid(url):
 
         # Check if the url has been traversed already
         if url in VISITED_URLS:
+            return False
+
+        if "ugrad" in str(url) or "https://www.stat.uci.edu/damonbayer/uci_covid19_dashboard/blob" in str(url) or "brenhall" in str(url) \
+            or "datasets/datasets/" in str(url):
+            return False
+
+        if checkURLForEmail(str(url)):
             return False
 
         # Check if the url has http or https at the beginning
@@ -122,5 +151,5 @@ def is_valid(url):
         return re.match(REGEX_PATTERN, parsed.netloc.lower()) is not None
 
     except TypeError:
-        print ("TypeError for ", parsed)
+        print("TypeError for ", parsed)
         raise
