@@ -13,7 +13,7 @@ class Results:
             A set of unique pages
             The longest length of a page
             A dictionary of words
-            A dictionary of subdomains
+            #TODO: A dictionary of subdomains
         """
         self.unique_pages = set()
         self.longest_page_count = 0
@@ -40,6 +40,8 @@ class Results:
 
     def add_subdomain(self, url) -> None:
         """
+        # TODO - Not working yet.
+        # TODO - Add checking to make sure the URL has a proper subdomain.
         Adds a subdomain to the subdomain results.
         If a given URL has a previously recorded subdomain, increments the
         subdomain's counter.
@@ -62,7 +64,7 @@ class Results:
         :param url: the url to add
         :return: void
         """
-        self.unique_pages.add(urldefrag(url).url) # can use urldefrag urldefrag(url).url instead of url.split("#")[0]
+        self.unique_pages.add(urldefrag(url).url)
         self.add_subdomain(url)
 
     def update_longest_length(self, count, url) -> None:
@@ -113,7 +115,7 @@ class Results:
         file = open("words.txt", 'w')
 
         for word, count in sorted_dict:
-            file.write(word + " -> " + str(count))
+            file.write(word + " -> " + str(count) + "\n")
 
         file.close()
         return sorted_dict
@@ -123,15 +125,12 @@ class Results:
         Returns the list of subdomains.
         :return: the dictionary of subdomains.
         """
-        # print(len(self.subdomains.keys()))
-        # for subdomain in self.subdomains.keys():
-        #     print(subdomain + " -> " + str(self.subdomains[subdomain]))
         sorted_dict = sorted(self.subdomains.items(), key=lambda x: (x[1], x[0]), reverse=True)
 
         file = open("subdomains.txt", 'w')
 
         for subdomain in sorted_dict:
-            file.write(subdomain + " -> " + str(self.subdomains[subdomain]))
+            file.write(subdomain + " -> " + str(self.subdomains[subdomain]) + "\n")
 
         file.close()
 
@@ -152,12 +151,6 @@ class Results:
         """
         Writes the words to file.
         """
-        # sorted_dict = sorted(self.words.items(), key=lambda x: x[1], reverse=True)
-        #
-        # file = open("subdomainOutput.txt", 'w')
-        #
-        # for line in sorted_dict:
-        #     file.write(line)
         sorted_dict = sorted(self.words.items(), key=lambda x: x[1], reverse=True)
 
         file = open("words.txt", 'w')
@@ -218,20 +211,44 @@ class Results:
         infile = open("log.txt", 'a')
         infile.write(str(self.longest_page_count) + " " + str(datetime.now()) + "\n")
 
-    def export_longest(self):
+        infile.close()
+
+    def export_longest_count(self):
         """
-        Records the longest page found and its length to a txt file.
+        Records the longest page count found.
+        :return: None.
+        """
+        outfile = open("longest_count.txt", 'w')
+        outfile.write(str(self.longest_page_count))
+
+        outfile.close()
+
+    def import_longest_count(self):
+        """
+        Loads the longest page count found.
+        :return:
+        """
+        infile = open("longest_count.txt", 'r')
+        self.longest_page_count = int(infile.readline())
+
+        infile.close()
+
+    def export_longest_page(self):
+        """
+        Records the longest page found
         :return: None.
         """
         outfile = open("longest.txt", 'w')
         outfile.write(self.longest_page)
-        outfile.write(str(self.longest_page_count))
 
-    def import_longest(self):
+        outfile.close()
+
+    def import_longest_page(self):
         """
-        Loads the longest file found and its length.
+        Loads the longest file found
         :return:
         """
         infile = open("longest.txt", 'r')
         self.longest_page = infile.readline()
-        self.longest_page_count = int(infile.readline())
+
+        infile.close()
