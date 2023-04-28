@@ -1,7 +1,13 @@
 import re
 import url_normalize
 from bs4 import BeautifulSoup
-from urllib.parse import urlparse
+from collections import Counter
+from urllib.robotparser import RobotFileParser
+from urllib.parse import urlparse, urljoin, urldefrag
+
+REGEX_PATTERN = r".*\.(ics|cs|informatics|stat)\.uci\.edu$"
+VISITED_URLS = set()
+
 
 globalVisited = set()
 urlRegex = re.compile(r".*\.(ics|cs|informatics|stat)\.uci\.edu(/.*|\.html|\.htm)$", re.IGNORECASE)
@@ -9,6 +15,40 @@ urlRegex = re.compile(r".*\.(ics|cs|informatics|stat)\.uci\.edu(/.*|\.html|\.htm
 def scraper(url, resp):
     links = extract_next_links(url, resp)
     return [link for link in links if is_valid(link)]
+
+def checkForRepeatingPath(parsedUrl):
+    # Take our path and split them into a list to get each path argument
+    # We do [1:] to omit the first "/"
+    pathArgs = parsedUrl.path[1:].split("/")
+    # Make a Counter of all separate path argument
+    pathArgsCounter = Counter(pathArgs)
+
+    # If any argument is repeated 3 or more times, we (most likely) have detected
+    # a trap, exit and don't crawl
+    for _, value in pathArgsCounter.most_common():
+        if value >= 3:
+            return True
+    return False
+
+def removeFragmentAndQuery(url):
+    """
+    Removes the query and fragment section from the given url
+    """
+    return urljoin(url, urlparse(url).path)
+
+
+# def _robotParser(url):
+#     # Create a RobotFileParser from urllib.parse
+#     robotTxtParser = RobotFileParser()
+
+#     # Set the robots.txt URL to parse by using urljoin()
+#     robotTxtParser.set_url(urljoin(url, "/robots.txt"))
+
+#     # Read and parse from the RobotFileParser
+#     robotTxtParser.read()
+
+#     # Return the object
+#     return robotTxtParser
 
 def extract_next_links(url, resp):
     # Implementation required.
@@ -19,6 +59,7 @@ def extract_next_links(url, resp):
     # resp.raw_response: this is where the page actually is. More specifically, the raw_response has two parts:
     #         resp.raw_response.url: the url, again
     #         resp.raw_response.content: the content of the page!
+<<<<<<< HEAD
     # Return a set with the hyperlinks (as strings) scrapped from resp.raw_response.content
     
     # Initialize set of links
@@ -41,10 +82,37 @@ def extract_next_links(url, resp):
             # Normalize the URL to avoid duplication
             href = url_normalize.url_normalize(href)
             links.add(href)
+=======
+    # Return a list with the hyperlinks (as strings) scrapped from resp.raw_response.content
 
-        # TODO: Check for looping, check for webpage similarity, check to see if this thing works in the first place
-        
+    # TODO: Can detect redirect by comparing url and resp.url?
+
+    # Initialize list of links
+    links = []
+
+    # Check if response status code is 200 first, otherwise it will not be accesible
+    if resp.status == 200:
+        # Add the URL to the VISITED_SET of URLs
+        VISITED_URLS.add(url)
+
+        # Parse the HTML content of the website using BeautifulSoup
+        soup = BeautifulSoup(resp.raw_response.content, "html.parser")
+
+        pageText = soup.get_text(strip = True, separator = " ")
+
+        # Extract the links from the webpage while being sure to defragment the URLs
+        links = [removeFragmentAndQuery(link.get("href")) for link in soup.find_all("a")]
+
+        # Check all the scraped links and check to see if they have a netloc/domain 
+        # If they do not, then add the current URL's netloc/domain into the scraped link
+        for i in range(len(links)):
+            parsed = urlparse(links[i])
+            if not parsed.netloc and parsed.path:
+                links[i] = urljoin(url, links[i])
+>>>>>>> master
+
     return links
+
 
 def is_valid(url):
     # Decide whether to crawl this url or not. 
@@ -52,18 +120,52 @@ def is_valid(url):
     # There are already some conditions that return False.
 
     # Namedtuple (scheme://netloc/path;parameters?query#fragment)
+
+    # TODO: Check for looping/traps, check for webpage similarity (maybe don't have to), check to see if this thing works in the first place
+    # TODO: Check for robots.txt (done?) and sitemaps
     try:
+        # Create a RobotFileParser object and read from robots.txt for any allowed or disallowed content
+        # rp = _robotParser(url)
+
+        # # Now check if current url is accessible based on robots.txt guidelines
+        # # if not, then we cannot crawl, return False
+        # if not rp.can_fetch("*", url):
+        #     return False
+
+        # Check if the url has been traversed already
+        if url in VISITED_URLS:
+            return False
+
+        # Check if the url has http or https at the beginning
         parsed = urlparse(url)
         if url in globalVisited: #Returns false if already visited
             return False
         if parsed.scheme not in set(["http", "https"]):
             return False
 
-        # The regex string will account for all URLS in this form:
+        if checkForRepeatingPath(parsed):
+            return False
+
+        # This will make sure that URLs that download files are not 
+        # considered to be valid
+        if re.match(
+            r".*.(css|js|bmp|gif|jpe?g|ico"
+            + r"|png|tiff?|mid|mp2|mp3|mp4"
+            + r"|wav|avi|mov|mpeg|ram|m4v|mkv|ogg|ogv|pdf"
+            + r"|ps|eps|tex|ppt|pptx|doc|docx|xls|xlsx|names"
+            + r"|data|dat|exe|bz2|tar|msi|bin|7z|psd|dmg|iso"
+            + r"|epub|dll|cnf|tgz|sha1"
+            + r"|thmx|mso|arff|rtf|jar|csv"
+            + r"|rm|smil|wmv|swf|wma|zip|rar|gz|ppsx)$", parsed.path.lower()):
+            return False
+
+
+        # The regex string will account for all URLs in this form:
         # *.ics.uci.edu/*
         # *.cs.uci.edu/*
         # *.informatics.uci.edu/*
         # *.stat.uci.edu/*
+<<<<<<< HEAD
         # Overall match string is r".*(.ics.uci.edu/.*|.cs.uci.edu/.*|.informatics.uci.edu/.*|.stat.uci.edu/.*)$"
         if not urlRegex.match(url):
             return False
@@ -103,3 +205,11 @@ if __name__ == '__main__':
             print(u, "Is valid =", is_valid(u))
             print(len(globalVisited))
 
+=======
+        # Overall match string is r".*\.(ics|cs|informatics|stat)\.uci\.edu$"
+        return re.match(REGEX_PATTERN, parsed.netloc.lower()) is not None
+
+    except TypeError:
+        print("TypeError for ", parsed)
+        raise
+>>>>>>> master
