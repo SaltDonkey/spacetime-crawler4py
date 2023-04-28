@@ -89,6 +89,7 @@ def extract_next_links(url, resp):
     links = set()
     # Check if response status code is 200 first, otherwise it will not be accessible
     if resp.status == 200:
+        VISITED_URLS.add(url)
         # Parse the HTML content of the website using BeautifulSoup
         soup = BeautifulSoup(resp.raw_response.content, "html.parser")
 
@@ -97,14 +98,13 @@ def extract_next_links(url, resp):
             href = link.get("href")
             if href:
                 href = url_normalize.url_normalize(href)
+                href = urldefrag(href)[0]
                 # Check all the scraped links and check to see if they have a netloc/domain 
                 parsed = urlparse(href)
                 if not parsed.netloc and parsed.path:
                     href = urljoin(url, href)
-                href = urldefrag(href)[0]  # remove fragment identifier
-                if href not in VISITED_URLS:
-                    links.add(href)
-                    VISITED_URLS.add(href)
+                links.add(href)
+
     return links
 
 
