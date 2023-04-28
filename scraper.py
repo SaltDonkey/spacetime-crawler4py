@@ -97,12 +97,13 @@ def is_valid(url):
         if parsed.scheme not in set(["http", "https"]):
             return False
             
-
+        # If any argument is repeated 3 or more times, we (most likely) have detected
+        # a trap, exit and don't crawl
         if checkForRepeatingPath(parsed):
             return False
 
         # This will make sure that URLs that download files are not 
-        # considered to be valid
+        # considered to be valid (anything ending with .extension)
         if re.match(
             r".*.(css|js|bmp|gif|jpe?g|ico"
             + r"|png|tiff?|mid|mp2|mp3|mp4"
@@ -113,8 +114,7 @@ def is_valid(url):
             + r"|thmx|mso|arff|rtf|jar|csv"
             + r"|rm|smil|wmv|swf|wma|zip|rar|gz|ppsx|class)$", parsed.path.lower()):
             return False
-
-
+        
         # The regex string will account for all URLs in this form:
         # *.ics.uci.edu/*
         # *.cs.uci.edu/*
