@@ -119,18 +119,35 @@ class TrapNavigator:
         :param results: the results object to update if a trap domain is located.
         :return:
         """
-        if "https://wiki.ics.uci.edu/doku.php" in new_url:
-            results.add_subdomain(new_url)
-            return True
-        if "http://www.informatics.uci.edu/files/pdf/InformaticsBrochure-March2018" in new_url:
-            results.add_subdomain(new_url)
-            return True
-        if "http://www.ics.uci.edu/ugrad/current/policies/index.php" in new_url:
-            results.add_subdomain(new_url)
-            return True
-        if "https://www.ics.uci.edu/ugrad/policies/index.php" in new_url:
-            results.add_subdomain(new_url)
-            return True
+        start_traps = [
+            "https://wiki.ics.uci.edu/doku.php",
+            "http://www.informatics.uci.edu/files/pdf/InformaticsBrochure-March2018",
+            "http://www.ics.uci.edu/ugrad/current/policies/index.php",
+            "https://www.ics.uci.edu/ugrad/policies",
+            "https://www.ics.uci.edu/about/brenhall/index.php/",
+            "http://www.ics.uci.edu/brenhall/brenhall",
+            "http://www.ics.uci.edu/ugrad/policies/",
+            "https://www.stat.uci.edu/damonbayer/uci_covid19_dashboard",
+            "https://www.stat.uci.edu/damonbayer/uci_covid19_dashboard/blob/",
+            "https://wics.ics.uci.edu/events/202",
+            "https://archive.ics.uci.edu/ml/datasets/datasets/"
+        ]
+
+        end_traps = [
+            "@uci.edu",
+            "@ics.uci.edu",
+            "@gmail.com",
+        ]
+
+        for s_trap in start_traps:
+            if new_url.startswith(s_trap):
+                return True
+
+        for e_trap in end_traps:
+            if new_url.endswith(e_trap):
+                return True
+
+        return False
 
 
     def add_hash_url(self, new_url, new_url_hash):
@@ -318,51 +335,69 @@ class Results:
         file.write("Longest length: " + str(self.longest_page_count))
 
     def export_word_json(self):
+        """
+        Exports the results.words dictionary to json.
+        For stopping and continuing.
+        :return: None
+        """
         with open("wordJSON.json", "w") as outfile:
             json.dump(self.words, outfile)
 
         outfile.close()
 
     def import_word_json(self):
+        """
+        Imports the results.words dictionary from json.
+        For stopping and continuing.
+        :return: None
+        """
         infile = open("wordJSON.json", "r")
         self.words = json.load(infile)
 
         infile.close()
 
     def export_subdomain_json(self):
+        """
+        Exports the subdomains to json.
+        :return: None
+        """
         with open("subdomainJSON.json", "w") as outfile:
             json.dump(self.subdomains, outfile)
 
         outfile.close()
 
     def import_subdomain_json(self):
+        """
+        Imports the subdomains from json.
+        :return: None
+        """
         infile = open("subdomainJSON.json", "r")
         self.subdomains = json.load(infile)
 
         infile.close()
 
-    def export_site_json(self):
-        with open("siteJSON.json", "w") as outfile:
-            json.dump(list(self.unique_pages), outfile)
-
-        outfile.close()
-
-    def import_site_json(self):
-        infile = open("siteJSON.json", "r")
-        self.unique_pages = set(json.load(infile))
-
-        infile.close()
-
     def export_log(self):
+        """
+        Updates the log file with crawl starts.
+        :return:
+        """
         infile = open("log.txt", 'a')
         infile.write(str(self.longest_page_count) + " " + str(datetime.now()) + "\n")
 
     def export_longest(self):
+        """
+        Records the longest page found and its length to a txt file.
+        :return: None.
+        """
         outfile = open("longest.txt", 'w')
-        outfile.write(self.longest_page + "\n")
+        outfile.write(self.longest_page)
         outfile.write(str(self.longest_page_count))
 
     def import_longest(self):
+        """
+        Loads the longest file found and its length.
+        :return:
+        """
         infile = open("longest.txt", 'r')
         self.longest_page = infile.readline()
         self.longest_page_count = int(infile.readline())
@@ -397,6 +432,9 @@ class Worker(Thread):
             if not tbd_url:
                 self.logger.info("Frontier is empty. Stopping Crawler.")
                 break
+            if trap_navigator.known_traps(tbd_url, results):
+                print("Cancelling trap.")
+                continue
             resp = download(tbd_url, self.config, self.logger)
             self.logger.info(
                 f"Downloaded {tbd_url}, status <{resp.status}>, "
@@ -419,9 +457,7 @@ class Worker(Thread):
             # For each obtained url, check if each url was similar
             # than the last
             for scraped_url in scraped_urls:
-                if trap_navigator.check_for_traps(scraped_url, tokens, results) and scraped_url not in results.unique_pages:
-                    pass
-                else:
+                if not trap_navigator.known_traps(scraped_url, results):
                     self.frontier.add_url(scraped_url)
                     results.add_unique_page(scraped_url)
             self.frontier.mark_url_complete(tbd_url)
@@ -432,9 +468,9 @@ class Worker(Thread):
 
             results.print_subdomains()
             results.print_words()
+            results.export_longest()
             results.export_subdomain_json()
             results.export_word_json()
-            results.export_longest()
 
 
 

@@ -1,89 +1,102 @@
-2023-04-25 20:49:54,177 - FRONTIER - INFO - Did not find save file frontier.shelve, starting from seed.
-2023-04-25 20:49:54,186 - FRONTIER - INFO - Found 0 urls to be downloaded from 0 total urls discovered.
-2023-04-25 20:54:00,436 - FRONTIER - INFO - Found 4 urls to be downloaded from 4 total urls discovered.
-2023-04-25 20:54:15,796 - FRONTIER - INFO - Found 4 urls to be downloaded from 4 total urls discovered.
-2023-04-25 20:54:37,152 - FRONTIER - INFO - Found 4 urls to be downloaded from 4 total urls discovered.
-2023-04-25 20:55:01,694 - FRONTIER - INFO - Found 0 urls to be downloaded from 4 total urls discovered.
-2023-04-25 20:55:06,830 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-25 20:57:49,276 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-25 20:58:11,131 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-25 21:03:39,338 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-25 21:34:49,654 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-25 21:45:46,262 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-25 21:46:22,867 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-25 21:50:16,271 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-25 21:55:41,571 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-25 22:20:10,394 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-25 22:21:21,559 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-25 22:23:37,159 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-25 22:23:52,690 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-25 22:24:06,362 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-25 22:24:25,995 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-25 22:24:55,008 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-25 22:25:13,169 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-25 22:25:25,250 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-25 22:26:45,145 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-25 22:28:10,744 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-25 22:31:38,870 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-25 22:33:04,417 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-25 22:38:06,291 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-25 22:38:33,964 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-25 22:43:18,748 - FRONTIER - INFO - Found 103 urls to be downloaded from 143 total urls discovered.
-2023-04-25 22:47:01,235 - FRONTIER - INFO - Found 299 urls to be downloaded from 592 total urls discovered.
-2023-04-25 22:56:25,789 - FRONTIER - INFO - Found 605 urls to be downloaded from 1063 total urls discovered.
-2023-04-25 22:58:17,850 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-25 22:59:28,295 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-25 23:00:42,683 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-25 23:01:44,177 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-25 23:15:24,207 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-25 23:23:28,165 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-25 23:23:49,246 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-25 23:26:39,122 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-25 23:30:14,007 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-25 23:35:55,030 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-25 23:49:11,683 - FRONTIER - INFO - Found 724 urls to be downloaded from 1548 total urls discovered.
-2023-04-25 23:50:45,033 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-25 23:54:29,641 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-25 23:54:40,081 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-25 23:55:01,592 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-26 00:12:56,967 - FRONTIER - INFO - Found 804 urls to be downloaded from 1734 total urls discovered.
-2023-04-26 00:13:23,486 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-26 00:15:33,724 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-26 00:26:54,370 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-26 00:28:12,471 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-26 00:28:36,988 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-26 00:29:25,684 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-26 00:58:52,894 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-26 00:59:17,562 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-26 01:00:12,372 - FRONTIER - INFO - Found 1 urls to be downloaded from 2 total urls discovered.
-2023-04-26 01:04:56,400 - FRONTIER - INFO - Found 459 urls to be downloaded from 868 total urls discovered.
-2023-04-26 01:19:24,162 - FRONTIER - INFO - Found 2039 urls to be downloaded from 3211 total urls discovered.
-2023-04-26 01:20:04,972 - FRONTIER - INFO - Found 2230 urls to be downloaded from 3425 total urls discovered.
-2023-04-26 01:21:23,457 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-26 01:24:14,577 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-26 01:24:33,583 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-26 01:24:53,794 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-26 01:25:14,588 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-26 01:25:28,996 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-26 01:26:59,616 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-26 01:27:08,544 - FRONTIER - INFO - Found 4 urls to be downloaded from 4 total urls discovered.
-2023-04-26 01:28:17,381 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-26 01:28:37,396 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-26 01:28:46,383 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-26 01:30:33,505 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-26 01:33:38,261 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-26 01:47:11,718 - FRONTIER - INFO - Found 4 urls to be downloaded from 4 total urls discovered.
-2023-04-26 01:47:54,075 - FRONTIER - INFO - Found 4 urls to be downloaded from 4 total urls discovered.
-2023-04-26 01:48:30,298 - FRONTIER - INFO - Found 4 urls to be downloaded from 4 total urls discovered.
-2023-04-26 01:49:18,987 - FRONTIER - INFO - Found 4 urls to be downloaded from 4 total urls discovered.
-2023-04-26 01:56:42,073 - FRONTIER - INFO - Found 4 urls to be downloaded from 4 total urls discovered.
-2023-04-26 01:56:57,020 - FRONTIER - INFO - Found 4 urls to be downloaded from 4 total urls discovered.
-2023-04-26 03:19:55,561 - FRONTIER - INFO - Found 81 urls to be downloaded from 91 total urls discovered.
-2023-04-26 03:25:41,732 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-26 04:01:32,914 - FRONTIER - INFO - Found 806 urls to be downloaded from 4542 total urls discovered.
-2023-04-26 04:01:43,046 - FRONTIER - INFO - Found 897 urls to be downloaded from 4645 total urls discovered.
-2023-04-26 04:02:03,663 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-26 08:09:05,754 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-26 08:10:58,074 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-26 09:29:42,868 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
-2023-04-26 11:47:29,899 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
+2023-04-27 11:17:52,234 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
+2023-04-27 11:18:41,319 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
+2023-04-27 11:18:50,600 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
+2023-04-27 11:20:19,138 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
+2023-04-27 11:20:33,035 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
+2023-04-27 11:27:01,399 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
+2023-04-27 11:29:17,420 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
+2023-04-27 11:29:42,674 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
+2023-04-27 11:31:43,156 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
+2023-04-27 11:34:37,570 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
+2023-04-27 11:35:17,637 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
+2023-04-27 11:36:23,459 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
+2023-04-27 11:37:09,317 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
+2023-04-27 11:37:17,214 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
+2023-04-27 11:37:28,835 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
+2023-04-27 11:37:40,029 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
+2023-04-27 11:38:11,009 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
+2023-04-27 11:38:46,837 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
+2023-04-27 11:38:52,122 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
+2023-04-27 11:39:33,842 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
+2023-04-27 11:40:00,917 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
+2023-04-27 11:45:43,193 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
+2023-04-27 11:46:14,130 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
+2023-04-27 12:31:48,126 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
+2023-04-27 13:08:42,974 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
+2023-04-27 13:08:53,416 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
+2023-04-27 13:09:00,249 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
+2023-04-27 13:58:37,563 - FRONTIER - INFO - Found 890 urls to be downloaded from 4383 total urls discovered.
+2023-04-27 13:59:09,153 - FRONTIER - INFO - Found 890 urls to be downloaded from 4383 total urls discovered.
+2023-04-27 14:09:45,076 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
+2023-04-27 14:10:58,029 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
+2023-04-27 14:11:14,399 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
+2023-04-27 14:12:35,476 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
+2023-04-27 14:13:48,065 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
+2023-04-27 14:14:06,283 - FRONTIER - INFO - Found 33 urls to be downloaded from 40 total urls discovered.
+2023-04-27 14:14:41,283 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
+2023-04-27 14:15:06,746 - FRONTIER - INFO - Found 30 urls to be downloaded from 37 total urls discovered.
+2023-04-27 14:19:46,956 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
+2023-04-27 14:19:57,111 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
+2023-04-27 14:20:28,093 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
+2023-04-27 14:20:39,389 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
+2023-04-27 14:22:31,246 - FRONTIER - INFO - Found 140 urls to be downloaded from 296 total urls discovered.
+2023-04-27 14:23:18,586 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
+2023-04-27 14:23:48,342 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
+2023-04-27 14:24:14,294 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
+2023-04-27 14:24:40,656 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
+2023-04-27 14:25:12,787 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
+2023-04-27 14:25:42,243 - FRONTIER - INFO - Found 47 urls to be downloaded from 59 total urls discovered.
+2023-04-27 14:26:07,517 - FRONTIER - INFO - Found 47 urls to be downloaded from 59 total urls discovered.
+2023-04-27 14:26:53,950 - FRONTIER - INFO - Found 47 urls to be downloaded from 59 total urls discovered.
+2023-04-27 14:28:04,436 - FRONTIER - INFO - Found 47 urls to be downloaded from 59 total urls discovered.
+2023-04-27 14:28:39,646 - FRONTIER - INFO - Found 47 urls to be downloaded from 59 total urls discovered.
+2023-04-27 14:30:20,204 - FRONTIER - INFO - Found 47 urls to be downloaded from 59 total urls discovered.
+2023-04-27 14:30:52,395 - FRONTIER - INFO - Found 47 urls to be downloaded from 59 total urls discovered.
+2023-04-27 14:31:58,906 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
+2023-04-27 14:33:11,277 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
+2023-04-27 14:33:53,928 - FRONTIER - INFO - Found 45 urls to be downloaded from 56 total urls discovered.
+2023-04-27 14:36:27,470 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
+2023-04-27 14:37:12,729 - FRONTIER - INFO - Found 31 urls to be downloaded from 36 total urls discovered.
+2023-04-27 14:37:33,631 - FRONTIER - INFO - Found 29 urls to be downloaded from 38 total urls discovered.
+2023-04-27 14:43:20,238 - FRONTIER - INFO - Found 87 urls to be downloaded from 96 total urls discovered.
+2023-04-27 14:43:48,292 - FRONTIER - INFO - Found 143 urls to be downloaded from 171 total urls discovered.
+2023-04-27 14:47:13,895 - FRONTIER - INFO - Found 542 urls to be downloaded from 672 total urls discovered.
+2023-04-27 14:51:34,092 - FRONTIER - INFO - Found 541 urls to be downloaded from 674 total urls discovered.
+2023-04-27 14:51:57,846 - FRONTIER - INFO - Found 556 urls to be downloaded from 718 total urls discovered.
+2023-04-27 14:55:15,425 - FRONTIER - INFO - Found 596 urls to be downloaded from 793 total urls discovered.
+2023-04-27 14:55:38,541 - FRONTIER - INFO - Found 595 urls to be downloaded from 793 total urls discovered.
+2023-04-27 14:56:19,237 - FRONTIER - INFO - Found 593 urls to be downloaded from 799 total urls discovered.
+2023-04-27 14:56:38,388 - FRONTIER - INFO - Found 626 urls to be downloaded from 836 total urls discovered.
+2023-04-27 14:58:11,443 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
+2023-04-27 14:58:25,763 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
+2023-04-27 14:58:39,049 - FRONTIER - INFO - Found 34 urls to be downloaded from 42 total urls discovered.
+2023-04-27 15:01:55,464 - FRONTIER - INFO - Found 222 urls to be downloaded from 467 total urls discovered.
+2023-04-27 15:02:05,844 - FRONTIER - INFO - Found 222 urls to be downloaded from 467 total urls discovered.
+2023-04-27 15:02:46,000 - FRONTIER - INFO - Found save file frontier.shelve, deleting it.
+2023-04-27 15:45:44,352 - FRONTIER - INFO - Found 888 urls to be downloaded from 4414 total urls discovered.
+2023-04-27 18:54:49,545 - FRONTIER - INFO - Found 949 urls to be downloaded from 11705 total urls discovered.
+2023-04-27 18:55:50,218 - FRONTIER - INFO - Found 949 urls to be downloaded from 11705 total urls discovered.
+2023-04-27 18:57:38,475 - FRONTIER - INFO - Found 1013 urls to be downloaded from 11786 total urls discovered.
+2023-04-27 18:58:27,889 - FRONTIER - INFO - Found 1013 urls to be downloaded from 11786 total urls discovered.
+2023-04-27 18:59:38,001 - FRONTIER - INFO - Found 1032 urls to be downloaded from 11807 total urls discovered.
+2023-04-27 19:02:05,389 - FRONTIER - INFO - Found 1054 urls to be downloaded from 11831 total urls discovered.
+2023-04-27 19:03:04,393 - FRONTIER - INFO - Found 1097 urls to be downloaded from 11886 total urls discovered.
+2023-04-27 19:04:42,381 - FRONTIER - INFO - Found 1185 urls to be downloaded from 11984 total urls discovered.
+2023-04-27 19:05:25,562 - FRONTIER - INFO - Found 1183 urls to be downloaded from 11984 total urls discovered.
+2023-04-27 19:06:59,580 - FRONTIER - INFO - Found 1216 urls to be downloaded from 12020 total urls discovered.
+2023-04-27 19:09:51,112 - FRONTIER - INFO - Found 1240 urls to be downloaded from 12069 total urls discovered.
+2023-04-27 19:11:15,108 - FRONTIER - INFO - Found 1266 urls to be downloaded from 12097 total urls discovered.
+2023-04-27 19:13:58,423 - FRONTIER - INFO - Found 1284 urls to be downloaded from 12118 total urls discovered.
+2023-04-27 19:14:18,076 - FRONTIER - INFO - Found 1277 urls to be downloaded from 12119 total urls discovered.
+2023-04-27 19:14:46,484 - FRONTIER - INFO - Found 1281 urls to be downloaded from 12130 total urls discovered.
+2023-04-27 19:15:44,636 - FRONTIER - INFO - Found 1281 urls to be downloaded from 12130 total urls discovered.
+2023-04-27 19:18:04,369 - FRONTIER - INFO - Found 1296 urls to be downloaded from 12149 total urls discovered.
+2023-04-27 19:18:24,623 - FRONTIER - INFO - Found 1296 urls to be downloaded from 12149 total urls discovered.
+2023-04-27 19:55:15,043 - FRONTIER - INFO - Found 1266 urls to be downloaded from 13677 total urls discovered.
+2023-04-27 19:56:15,371 - FRONTIER - INFO - Found 1235 urls to be downloaded from 13688 total urls discovered.
+2023-04-27 19:57:52,724 - FRONTIER - INFO - Found 2098 urls to be downloaded from 14608 total urls discovered.
+2023-04-27 20:04:38,389 - FRONTIER - INFO - Found 2026 urls to be downloaded from 14815 total urls discovered.
+2023-04-27 20:05:33,002 - FRONTIER - INFO - Found 2087 urls to be downloaded from 14908 total urls discovered.
+2023-04-27 20:23:36,456 - FRONTIER - INFO - Found 1996 urls to be downloaded from 15573 total urls discovered.
+2023-04-27 20:28:47,190 - FRONTIER - INFO - Found 2059 urls to be downloaded from 15676 total urls discovered.
+2023-04-27 20:29:03,848 - FRONTIER - INFO - Found 2074 urls to be downloaded from 15695 total urls discovered.
