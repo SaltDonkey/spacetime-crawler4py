@@ -4,7 +4,7 @@ from collections import Counter
 from urllib.robotparser import RobotFileParser
 from urllib.parse import urlparse, urljoin, urldefrag
 
-REGEX_PATTERN = r".*\.(ics|cs|informatics|stat)\.uci\.edu$"
+REGEX_PATTERN = re.compile(r".*\.(ics|cs|informatics|stat)\.uci\.edu$")
 VISITED_URLS = set()
 
 
@@ -26,25 +26,17 @@ def checkForRepeatingPath(parsedUrl):
             return True
     return False
 
+def checkURLForEmail(url):
+    emailPattern = re.compile(r".*@(uci.edu|ics.uci.edu)")
+    matching = re.match(emailPattern, url)
+
+    return True if matching else False
+
 def removeFragmentAndQuery(url):
     """
     Removes the query and fragment section from the given url
     """
     return urljoin(url, urlparse(url).path)
-
-
-# def _robotParser(url):
-#     # Create a RobotFileParser from urllib.parse
-#     robotTxtParser = RobotFileParser()
-
-#     # Set the robots.txt URL to parse by using urljoin()
-#     robotTxtParser.set_url(urljoin(url, "/robots.txt"))
-
-#     # Read and parse from the RobotFileParser
-#     robotTxtParser.read()
-
-#     # Return the object
-#     return robotTxtParser
 
 def extract_next_links(url, resp):
     # Implementation required.
@@ -91,32 +83,27 @@ def is_valid(url):
     # There are already some conditions that return False.
 
     # Namedtuple (scheme://netloc/path;parameters?query#fragment)
-
-    # TODO: Check for looping/traps, check for webpage similarity (maybe don't have to), check to see if this thing works in the first place
-    # TODO: Check for robots.txt (done?) and sitemaps
     try:
-        # Create a RobotFileParser object and read from robots.txt for any allowed or disallowed content
-        # rp = _robotParser(url)
-
-        # # Now check if current url is accessible based on robots.txt guidelines
-        # # if not, then we cannot crawl, return False
-        # if not rp.can_fetch("*", url):
-        #     return False
-
         # Check if the url has been traversed already
         if url in VISITED_URLS:
+            return False
+
+        # Check if the url has an email at the end, if so, don't traverse this webpage
+        if checkURLForEmail(str(url)):
             return False
 
         # Check if the url has http or https at the beginning
         parsed = urlparse(url)
         if parsed.scheme not in set(["http", "https"]):
             return False
-
+            
+        # If any argument is repeated 3 or more times, we (most likely) have detected
+        # a trap, exit and don't crawl
         if checkForRepeatingPath(parsed):
             return False
 
         # This will make sure that URLs that download files are not 
-        # considered to be valid
+        # considered to be valid (anything ending with .extension)
         if re.match(
             r".*.(css|js|bmp|gif|jpe?g|ico"
             + r"|png|tiff?|mid|mp2|mp3|mp4"
@@ -125,10 +112,9 @@ def is_valid(url):
             + r"|data|dat|exe|bz2|tar|msi|bin|7z|psd|dmg|iso"
             + r"|epub|dll|cnf|tgz|sha1"
             + r"|thmx|mso|arff|rtf|jar|csv"
-            + r"|rm|smil|wmv|swf|wma|zip|rar|gz|ppsx)$", parsed.path.lower()):
+            + r"|rm|smil|wmv|swf|wma|zip|rar|gz|ppsx|class)$", parsed.path.lower()):
             return False
-
-
+        
         # The regex string will account for all URLs in this form:
         # *.ics.uci.edu/*
         # *.cs.uci.edu/*
