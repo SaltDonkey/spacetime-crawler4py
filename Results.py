@@ -40,8 +40,6 @@ class Results:
 
     def add_subdomain(self, url) -> None:
         """
-        # TODO - Not working yet.
-        # TODO - Add checking to make sure the URL has a proper subdomain.
         Adds a subdomain to the subdomain results.
         If a given URL has a previously recorded subdomain, increments the
         subdomain's counter.
