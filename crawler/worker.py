@@ -293,6 +293,16 @@ class Worker(Thread):
         results = Results()
         trap_navigator = TrapNavigator()
 
+        try:
+            results.import_subdomain_json()
+            results.import_word_json()
+            results.import_longest_count()
+            results.import_longest_page()
+        except FileNotFoundError:
+            print("Running for first time")
+
+        results.export_log()
+
         while True:
             tbd_url = self.frontier.get_tbd_url()
             if not tbd_url:
@@ -315,6 +325,7 @@ class Worker(Thread):
             # Update the current longest page length.
             results.update_longest_length(len(tokens))
 
+            # For each obtained url, check for traps
             for scraped_url in scraped_urls:
                 if results.check_page(scraped_url) or trap_navigator.check_for_traps(scraped_url, tokens):
                     pass
@@ -329,10 +340,17 @@ class Worker(Thread):
             # Debugging - Print word list length and current results.
             # print(len(results.words))
             # results.print_longest_length()
-            # print(resp.url)
+
+            results.print_subdomains()
+            results.print_words()
+            results.export_longest_count()
+            results.export_longest_page()
+            results.export_subdomain_json()
+            results.export_word_json()
 
             time.sleep(self.config.time_delay)
 
-        # results.get_words()
-        # results.print_longest_length()
-        # results.get_subdomains()
+        results.print_words()
+        results.export_longest_count()
+        results.export_longest_page()
+        results.print_subdomains()
