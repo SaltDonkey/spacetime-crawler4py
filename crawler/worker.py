@@ -44,9 +44,12 @@ class Worker(Thread):
         results = Results()
         trap_navigator = TrapNavigator()
 
-        results.import_subdomain_json()
-        results.import_word_json()
-        results.import_longest()
+        try:
+            results.import_subdomain_json()
+            results.import_word_json()
+            results.import_longest()
+        except FileNotFoundError:
+            print("Running for first time")
 
         results.export_log()
 
@@ -56,7 +59,7 @@ class Worker(Thread):
             if not tbd_url:
                 self.logger.info("Frontier is empty. Stopping Crawler.")
                 break
-            if trap_navigator.known_traps(tbd_url, results):
+            if trap_navigator.known_traps(tbd_url):
                 print("Cancelling trap.")
                 continue
             resp = download(tbd_url, self.config, self.logger)
@@ -81,7 +84,7 @@ class Worker(Thread):
             # For each obtained url, check if each url was similar
             # than the last
             for scraped_url in scraped_urls:
-                if not trap_navigator.known_traps(scraped_url, results):
+                if not trap_navigator.known_traps(scraped_url):
                     self.frontier.add_url(scraped_url)
                     results.add_unique_page(scraped_url)
             self.frontier.mark_url_complete(tbd_url)
@@ -92,7 +95,7 @@ class Worker(Thread):
 
             results.print_subdomains()
             results.print_words()
-            results.export_longest()
+            results.export_longest_count()
             results.export_subdomain_json()
             results.export_word_json()
 
