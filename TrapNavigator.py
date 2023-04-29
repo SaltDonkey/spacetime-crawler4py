@@ -1,3 +1,5 @@
+from urllib.parse import urlparse
+
 class TrapNavigator:
     """
     Class to prevent traps.
@@ -5,20 +7,21 @@ class TrapNavigator:
 
     def __init__(self):
         self.start_traps = [
-            "https://wiki.ics.uci.edu/doku.php",
-            "http://www.informatics.uci.edu/files/pdf/InformaticsBrochure-March2018",
-            "http://www.ics.uci.edu/ugrad/current/policies/index.php",
-            "https://www.ics.uci.edu/ugrad/policies",
-            "https://www.ics.uci.edu/about/brenhall/index.php/",
-            "http://www.ics.uci.edu/brenhall/brenhall",
-            "http://www.ics.uci.edu/ugrad/policies/",
-            "https://www.stat.uci.edu/damonbayer/uci_covid19_dashboard",
-            "https://www.stat.uci.edu/damonbayer/uci_covid19_dashboard/blob/",
-            "https://wics.ics.uci.edu/events/202",
-            "https://archive.ics.uci.edu/ml/datasets/datasets/",
-            "http://www.ics.uci.edu/honors/honors/",
-            "https://www.ics.uci.edu/ugrad/honors/index.php"
+            "wiki.ics.uci.edu/doku.php",
+            "www.informatics.uci.edu/files/pdf/InformaticsBrochure-March2018",
+            "www.ics.uci.edu/ugrad/current/policies/index.php",
+            "www.ics.uci.edu/ugrad/policies",
+            "www.ics.uci.edu/about/brenhall/index.php/",
+            "www.ics.uci.edu/brenhall/brenhall",
+            "www.ics.uci.edu/ugrad/policies/",
+            "www.stat.uci.edu/damonbayer/uci_covid19_dashboard",
+            "www.stat.uci.edu/damonbayer/uci_covid19_dashboard/blob/",
+            "wics.ics.uci.edu/events/202",
+            "archive.ics.uci.edu/ml/datasets/datasets/",
+            "www.ics.uci.edu/honors/honors/",
+            "www.ics.uci.edu/ugrad/honors/index.php"
         ]
+
         self.end_traps = [
             "@uci.edu",
             "@ics.uci.edu",
@@ -45,13 +48,15 @@ class TrapNavigator:
         :param new_url: the url to check.
         :return:
         """
+        parsed = urlparse(new_url)
+        noSchemeURL = parsed.netloc + parsed.path
 
         for s_trap in self.start_traps:
-            if new_url.startswith(s_trap):
+            if noSchemeURL.startswith(s_trap):
                 return True
 
         for e_trap in self.end_traps:
-            if new_url.endswith(e_trap):
+            if noSchemeURL.endswith(e_trap):
                 return True
 
         return False

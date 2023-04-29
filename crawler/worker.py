@@ -8,6 +8,7 @@ import scraper
 import time
 from bs4 import BeautifulSoup
 from nltk.tokenize import RegexpTokenizer
+from url_normalize import url_normalize
 
 def tokenize(response):
     """
@@ -56,6 +57,11 @@ class Worker(Thread):
         while True:
 
             tbd_url = self.frontier.get_tbd_url()
+            
+            # NORMALIZE URL
+            tbd_url = url_normalize(str(tbd_url))
+            # =============
+
             if not tbd_url:
                 self.logger.info("Frontier is empty. Stopping Crawler.")
                 break
@@ -96,13 +102,15 @@ class Worker(Thread):
             results.print_subdomains()
             results.print_words()
             results.export_longest_count()
+            results.export_longest_page()
             results.export_subdomain_json()
             results.export_word_json()
 
-
-
             time.sleep(self.config.time_delay)
 
-        results.get_words()
-        results.print_longest_length()
-        results.get_subdomains()
+        results.print_subdomains()
+        results.print_words()
+        results.export_longest_count()
+        results.export_longest_page()
+        results.export_subdomain_json()
+        results.export_word_json()

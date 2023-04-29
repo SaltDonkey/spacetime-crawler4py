@@ -4,7 +4,15 @@ from collections import Counter
 from urllib.robotparser import RobotFileParser
 from urllib.parse import urlparse, urljoin, urldefrag
 
-REGEX_PATTERN = re.compile(r".*\.(ics|cs|informatics|stat)\.uci\.edu$")
+DOMAIN_PATTERN = re.compile(r".*\.(ics|cs|informatics|stat)\.uci\.edu$")
+EXTENSIONS_PATTERN = re.compile(r".*.(css|js|bmp|gif|jpe?g|ico"
+            + r"|png|tiff?|mid|mp2|mp3|mp4"
+            + r"|wav|avi|mov|mpeg|ram|m4v|mkv|ogg|ogv|pdf"
+            + r"|ps|eps|tex|ppt|pptx|doc|docx|xls|xlsx|names"
+            + r"|data|dat|exe|bz2|tar|msi|bin|7z|psd|dmg|iso"
+            + r"|epub|dll|cnf|tgz|sha1"
+            + r"|thmx|mso|arff|rtf|jar|csv"
+            + r"|rm|smil|wmv|swf|wma|zip|rar|gz|ppsx|class|odc|ova)$")
 VISITED_URLS = set()
 
 
@@ -104,15 +112,7 @@ def is_valid(url):
 
         # This will make sure that URLs that download files are not 
         # considered to be valid (anything ending with .extension)
-        if re.match(
-            r".*.(css|js|bmp|gif|jpe?g|ico"
-            + r"|png|tiff?|mid|mp2|mp3|mp4"
-            + r"|wav|avi|mov|mpeg|ram|m4v|mkv|ogg|ogv|pdf"
-            + r"|ps|eps|tex|ppt|pptx|doc|docx|xls|xlsx|names"
-            + r"|data|dat|exe|bz2|tar|msi|bin|7z|psd|dmg|iso"
-            + r"|epub|dll|cnf|tgz|sha1"
-            + r"|thmx|mso|arff|rtf|jar|csv"
-            + r"|rm|smil|wmv|swf|wma|zip|rar|gz|ppsx|class|odc|ova)$", parsed.path.lower()):
+        if re.match(EXTENSIONS_PATTERN, parsed.path.lower()):
             return False
         
         # The regex string will account for all URLs in this form:
@@ -121,7 +121,7 @@ def is_valid(url):
         # *.informatics.uci.edu/*
         # *.stat.uci.edu/*
         # Overall match string is r".*\.(ics|cs|informatics|stat)\.uci\.edu$"
-        return re.match(REGEX_PATTERN, parsed.netloc.lower()) is not None
+        return re.match(DOMAIN_PATTERN, parsed.netloc.lower()) is not None
 
     except TypeError:
         print("TypeError for ", parsed)
