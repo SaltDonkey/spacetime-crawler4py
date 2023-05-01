@@ -55,7 +55,6 @@ class Worker(Thread):
         results.export_log()
 
         while True:
-
             tbd_url = self.frontier.get_tbd_url()
             
             # NORMALIZE URL
@@ -79,12 +78,17 @@ class Worker(Thread):
             # print(tbd_url)
             tokens = tokenize(resp)
             # print(Simhash(tokens).value)
+            # print(tbd_url)
+            tokens = tokenize(resp)
+            # print(Simhash(tokens).value)
 
             # Add each token into the stored results.
             for token in tokens:
                 results.add_word(token.lower())
+                results.add_word(token.lower())
 
             # Update the current longest page length.
+            results.update_longest_length(len(tokens), tbd_url)
             results.update_longest_length(len(tokens), tbd_url)
 
             # For each obtained url, check if each url was similar
@@ -92,6 +96,7 @@ class Worker(Thread):
             for scraped_url in scraped_urls:
                 if not trap_navigator.known_traps(scraped_url):
                     self.frontier.add_url(scraped_url)
+                    results.add_unique_page(scraped_url)
                     results.add_unique_page(scraped_url)
             self.frontier.mark_url_complete(tbd_url)
 
