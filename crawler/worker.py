@@ -102,4 +102,9 @@ class Worker(Thread):
 
             time.sleep(self.config.time_delay)
 
-        print(results.longest_page)
+        results.print_subdomains()
+        results.print_words()
+        results.export_longest_page()
+        results.export_longest_count()
+        results.export_subdomain_json()
+        results.export_word_json()
