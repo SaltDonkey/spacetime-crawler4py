@@ -69,6 +69,10 @@ class Worker(Thread):
                 f"Downloaded {tbd_url}, status <{resp.status}>, "
                 f"using cache {self.config.cache_server}.")
 
+            tbd_url = url_normalize(str(tbd_url))
+            
+            results.add_unique_page(tbd_url)
+
             scraped_urls = scraper.scraper(tbd_url, resp)
 
             # Tokenize the response.
@@ -86,9 +90,8 @@ class Worker(Thread):
             # than the last
             for scraped_url in scraped_urls:
                 normalizedUrl = url_normalize(str(scraped_url))
-                if not trap_navigator.known_traps(scraped_url) and not trap_navigator.known_traps(normalizedUrl):
+                if not trap_navigator.known_traps(normalizedUrl):
                     self.frontier.add_url(normalizedUrl)
-                    results.add_unique_page(normalizedUrl)
             self.frontier.mark_url_complete(tbd_url)
 
             # Debugging - Print word list length and current results.
