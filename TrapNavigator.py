@@ -1,24 +1,22 @@
-from urllib.parse import urlparse
-
 class TrapNavigator:
     """
     Class to prevent traps.
     """
 
     def __init__(self):
-        self.start_traps = [
-            "wiki.ics.uci.edu/doku.php",
-            "www.informatics.uci.edu/files/pdf/InformaticsBrochure-March2018",
-            "www.ics.uci.edu/ugrad/current/policies/index.php",
-            "www.ics.uci.edu/ugrad/policies",
-            "www.ics.uci.edu/about/brenhall/index.php/",
-            "www.ics.uci.edu/brenhall/brenhall",
-            "www.ics.uci.edu/ugrad/policies/",
-            "www.stat.uci.edu/damonbayer/uci_covid19_dashboard",
-            "www.stat.uci.edu/damonbayer/uci_covid19_dashboard/blob/",
-            "wics.ics.uci.edu/events/202",
-            "archive.ics.uci.edu/ml/datasets/datasets/",
-            "www.ics.uci.edu/honors/honors/",
+        self.start_traps = [	
+            "wiki.ics.uci.edu/doku.php",	
+            "www.informatics.uci.edu/files/pdf/InformaticsBrochure-March2018",	
+            "www.ics.uci.edu/ugrad/current/policies/index.php",	
+            "www.ics.uci.edu/ugrad/policies",	
+            "www.ics.uci.edu/about/brenhall/index.php/",	
+            "www.ics.uci.edu/brenhall/brenhall",	
+            "www.ics.uci.edu/ugrad/policies/",	
+            "www.stat.uci.edu/damonbayer/uci_covid19_dashboard",	
+            "www.stat.uci.edu/damonbayer/uci_covid19_dashboard/blob/",	
+            "wics.ics.uci.edu/events/202",	
+            "archive.ics.uci.edu/ml/datasets/datasets/",	
+            "www.ics.uci.edu/honors/honors/",	
             "www.ics.uci.edu/ugrad/honors/index.php"
         ]
 
@@ -48,15 +46,13 @@ class TrapNavigator:
         :param new_url: the url to check.
         :return:
         """
-        parsed = urlparse(new_url)
+        parsed = urlparse(new_url)	
         noSchemeURL = parsed.netloc + parsed.path
 
-        for s_trap in self.start_traps:
-            if noSchemeURL.startswith(s_trap):
-                return True
-
-        for e_trap in self.end_traps:
-            if noSchemeURL.endswith(e_trap):
-                return True
-
+        for s_trap in self.start_traps:	
+            if noSchemeURL.startswith(s_trap):	
+                return True	
+        for e_trap in self.end_traps:	
+            if noSchemeURL.endswith(e_trap):	
+                return True	
         return False

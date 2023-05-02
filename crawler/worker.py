@@ -45,6 +45,7 @@ class Worker(Thread):
         results = Results()
         trap_navigator = TrapNavigator()
 
+        # If resuming, import our previously saved Results
         try:
             results.import_subdomain_json()
             results.import_word_json()
@@ -56,10 +57,6 @@ class Worker(Thread):
 
         while True:
             tbd_url = self.frontier.get_tbd_url()
-            
-            # NORMALIZE URL
-            tbd_url = url_normalize(str(tbd_url))
-            # =============
 
             if not tbd_url:
                 self.logger.info("Frontier is empty. Stopping Crawler.")
@@ -77,27 +74,21 @@ class Worker(Thread):
             # Tokenize the response.
             # print(tbd_url)
             tokens = tokenize(resp)
-            # print(Simhash(tokens).value)
-            # print(tbd_url)
-            tokens = tokenize(resp)
-            # print(Simhash(tokens).value)
 
             # Add each token into the stored results.
             for token in tokens:
                 results.add_word(token.lower())
-                results.add_word(token.lower())
 
             # Update the current longest page length.
-            results.update_longest_length(len(tokens), tbd_url)
             results.update_longest_length(len(tokens), tbd_url)
 
             # For each obtained url, check if each url was similar
             # than the last
             for scraped_url in scraped_urls:
-                if not trap_navigator.known_traps(scraped_url):
-                    self.frontier.add_url(scraped_url)
-                    results.add_unique_page(scraped_url)
-                    results.add_unique_page(scraped_url)
+                normalizedUrl = url_normalize(str(scraped_url))
+                if not trap_navigator.known_traps(scraped_url) and not trap_navigator.known_traps(normalizedUrl):
+                    self.frontier.add_url(normalizedUrl)
+                    results.add_unique_page(normalizedUrl)
             self.frontier.mark_url_complete(tbd_url)
 
             # Debugging - Print word list length and current results.
@@ -106,8 +97,7 @@ class Worker(Thread):
 
             results.print_subdomains()
             results.print_words()
-            results.export_longest_count()
-            results.export_longest_page()
+            results.export_longest()
             results.export_subdomain_json()
             results.export_word_json()
 
@@ -115,7 +105,6 @@ class Worker(Thread):
 
         results.print_subdomains()
         results.print_words()
-        results.export_longest_count()
-        results.export_longest_page()
+        results.export_longest()
         results.export_subdomain_json()
         results.export_word_json()

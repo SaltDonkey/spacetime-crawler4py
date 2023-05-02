@@ -51,10 +51,7 @@ class Results:
         subdomain = match.group(1) if match else None
 
         if subdomain:
-            if subdomain in self.subdomains:
-                self.subdomains[subdomain] += 1
-            else:
-                self.subdomains[subdomain] = 1
+            self.subdomains[subdomain] += 1
 
     def add_unique_page(self, url) -> None:
         """
@@ -81,18 +78,15 @@ class Results:
         Adds the passed word to the word dict.
         If the word is already in the dict, increment its counter.
         :param new_word:
-        :return:
         """
         word = new_word.lower()
         if word not in self.stopwords:
             self.words[word] += 1
-        else:
-            pass
 
     def get_words(self) -> list:
         """
-        Sorts the dict by most frequent word first, then returns it.
-        :return: the sorted dictionary of words.
+        Returns the words found in all pages.
+        :return: the dictionary of words.
         """
         return self.words
 
@@ -107,7 +101,7 @@ class Results:
         """
         Writes the subdomains to file.
         """
-        sorted_dict = sorted(self.subdomains.items(), key=lambda x: x[1], reverse=True)
+        sorted_dict = sorted(self.subdomains.items(), key=lambda x: (x[1], x[0]), reverse=True)
 
         file = open("subdomainOutput.txt", 'w')
 
@@ -120,7 +114,7 @@ class Results:
         """
         Writes the words to file.
         """
-        sorted_dict = sorted(self.words.items(), key=lambda x: x[1], reverse=True)
+        sorted_dict = sorted(self.words.items(), key=lambda x: (x[1], x[0]), reverse=True)
 
         file = open("words.txt", 'w')
 
@@ -181,42 +175,24 @@ class Results:
 
         infile.close()
 
-    def export_longest_count(self):
+    def export_longest(self):
         """
-        Records the longest page count found.
+        Records the longest page found as well as the number of words of that page
         :return: None.
         """
-        outfile = open("longest_count.txt", 'w')
-        outfile.write(str(self.longest_page_count))
-
-        outfile.close()
-
-    def import_longest_count(self):
-        """
-        Loads the longest page count found.
-        :return:
-        """
-        infile = open("longest_count.txt", 'r')
-        self.longest_page_count = int(infile.readline())
-
-        infile.close()
-
-    def export_longest_page(self):
-        """
-        Records the longest page found
-        :return: None.
-        """
-        outfile = open("longest_page.txt", 'w')
+        outfile = open("longest.txt", 'w')
         outfile.write(self.longest_page + "\n")
+        outfile.write(str(self.longest_page_count) + "\n")
 
         outfile.close()
 
-    def import_longest_page(self):
+    def import_longest(self):
         """
-        Loads the longest file found
+        Loads the longest page found as well as the number of words of that page
         :return:
         """
-        infile = open("longest_page.txt", 'r')
-        self.longest_page = infile.readline()
+        infile = open("longest.txt", 'r')
+        self.longest_page = infile.readline().strip()
+        self.longest_page_count = int(infile.readline())
 
         infile.close()
