@@ -115,7 +115,7 @@ def is_valid(url):
             + r"|rm|smil|wmv|swf|wma|zip|rar|gz|ppsx|class)$", parsed.path.lower()):
             return False
 
-        if "@" in url:
+        if "@" in str(url):
             return False
         
         # The regex string will account for all URLs in this form:
