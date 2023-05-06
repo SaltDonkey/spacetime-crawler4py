@@ -8,6 +8,18 @@ import scraper
 import time
 from bs4 import BeautifulSoup
 from nltk.tokenize import RegexpTokenizer
+<<<<<<< Updated upstream
+=======
+
+def exportResults(results):
+    results.print_subdomains()
+    results.print_words()
+    results.export_longest_page()
+    results.export_longest_count()
+    results.export_subdomain_json()
+    results.export_word_json()
+
+>>>>>>> Stashed changes
 
 def tokenize(response):
     """
@@ -44,6 +56,11 @@ class Worker(Thread):
         results = Results()
         trap_navigator = TrapNavigator()
 
+<<<<<<< Updated upstream
+=======
+        # This will raise an excpetion when running for the first time since
+        # there will be nothing to import
+>>>>>>> Stashed changes
         try:
             results.import_subdomain_json()
             results.import_word_json()
@@ -51,28 +68,35 @@ class Worker(Thread):
         except FileNotFoundError:
             print("Running for first time")
 
+        # Export a log just for tracking
+        # Shows when the crawling first took place and the status
+        # of crawling at the start
         results.export_log()
 
         while True:
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
             tbd_url = self.frontier.get_tbd_url()
             if not tbd_url:
                 self.logger.info("Frontier is empty. Stopping Crawler.")
                 break
-            if trap_navigator.known_traps(tbd_url):
-                print("Cancelling trap.")
-                continue
             resp = download(tbd_url, self.config, self.logger)
             self.logger.info(
                 f"Downloaded {tbd_url}, status <{resp.status}>, "
                 f"using cache {self.config.cache_server}.")
 
+<<<<<<< Updated upstream
+=======
+            # Add our page to our results to keept track of for the report
+>>>>>>> Stashed changes
             results.add_unique_page(tbd_url)
 
+            # Scrape our urls from the webpage
             scraped_urls = scraper.scraper(tbd_url, resp)
 
             # Tokenize the response.
-            # print(tbd_url)
             tokens = tokenize(resp)
 
             # Add each token into the stored results.
@@ -89,6 +113,7 @@ class Worker(Thread):
                     self.frontier.add_url(scraped_url)
             self.frontier.mark_url_complete(tbd_url)
 
+<<<<<<< Updated upstream
             # Debugging - Print word list length and current results.
             # print(len(results.words))
             # results.print_longest_length()
@@ -108,3 +133,13 @@ class Worker(Thread):
         results.export_longest_count()
         results.export_subdomain_json()
         results.export_word_json()
+=======
+            # At the end of each iteration, export our results
+            # for saving
+            exportResults(results)
+
+            time.sleep(self.config.time_delay)
+
+        # At the end of crawling, export our results for a final time
+        exportResults(results)
+>>>>>>> Stashed changes

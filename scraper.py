@@ -1,12 +1,36 @@
 import re
 from bs4 import BeautifulSoup
 from collections import Counter
-from urllib.robotparser import RobotFileParser
 from urllib.parse import urlparse, urljoin, urldefrag
 
-REGEX_PATTERN = re.compile(r".*\.(ics|cs|informatics|stat)\.uci\.edu$")
-VISITED_URLS = set()
+# The regex string will account for all URLs in this form:
+# *.ics.uci.edu/*
+# *.cs.uci.edu/*
+# *.informatics.uci.edu/*
+# *.stat.uci.edu/*
+DOMAIN_PATTERN = re.compile(r".*\.(ics|cs|informatics|stat)\.uci\.edu$")
 
+# The regex string will try to disallow urls that end in any of these 
+# extensions
+EXTENSIONS_PATTERN = re.compile(r".*.(css|js|bmp|gif|jpe?g|ico"
+            + r"|png|tiff?|mid|mp2|mp3|mp4"
+            + r"|wav|avi|mov|mpeg|ram|m4v|mkv|ogg|ogv|pdf"
+            + r"|ps|eps|tex|ppt|pptx|doc|docx|xls|xlsx|names"
+            + r"|data|dat|exe|bz2|tar|msi|bin|7z|psd|dmg|iso"
+            + r"|epub|dll|cnf|tgz|sha1"
+            + r"|thmx|mso|arff|rtf|jar|csv"
+            + r"|rm|smil|wmv|swf|wma|zip|rar|gz|ppsx|class|odc|ova"
+            + r"|bib|r|txt|py|scm|rkt|java|ds_store|pd|sql|xml"
+            + r"|war|conf|c|h|sh|svg|conf|fig|cfg|m)$")
+"""
+.*.(css|js|bmp|gif|jpe?g|ico|png|tiff?|mid|mp2|mp3|mp4|wav|avi|mov
+|mpeg|ram|m4v|mkv|ogg|ogv|pdf|ps|eps|tex|ppt|pptx|doc|docx|xls|xlsx
+|names|data|dat|exe|bz2|tar|msi|bin|7z|psd|dmg|iso|epub|dll|cnf|tgz
+|sha1|thmx|mso|arff|rtf|jar|csv|rm|smil|wmv|swf|wma|zip|rar|gz|ppsx
+|class|odc|ova|bib|r|txt|py|scm|rkt|java|ds_store|pd|sql|xml|war|conf
+|c|h|sh|svg|conf|fig|cfg|m)$
+"""
+VISITED_URLS = set()
 
 def scraper(url, resp):
     links = extract_next_links(url, resp)
@@ -26,12 +50,6 @@ def checkForRepeatingPath(parsedUrl):
             return True
     return False
 
-def checkURLForEmail(url):
-    emailPattern = re.compile(r".*@(uci.edu|ics.uci.edu)")
-    matching = re.match(emailPattern, url)
-
-    return True if matching else False
-
 def removeFragmentAndQuery(url):
     """
     Removes the query and fragment section from the given url
@@ -48,8 +66,6 @@ def extract_next_links(url, resp):
     #         resp.raw_response.url: the url, again
     #         resp.raw_response.content: the content of the page!
     # Return a list with the hyperlinks (as strings) scrapped from resp.raw_response.content
-
-    # TODO: Can detect redirect by comparing url and resp.url?
 
     # Initialize list of links
     links = []
@@ -88,8 +104,8 @@ def is_valid(url):
         if url in VISITED_URLS:
             return False
 
-        # Check if the url has an email at the end, if so, don't traverse this webpage
-        if checkURLForEmail(str(url)):
+        # Check if the url has an "pdf" or "@" anywhere, if so, the url is invalid
+        if "@" in str(url) or "pdf" in str(url):
             return False
 
         # Check if the url has http or https at the beginning
@@ -104,18 +120,7 @@ def is_valid(url):
 
         # This will make sure that URLs that download files are not 
         # considered to be valid (anything ending with .extension)
-        if re.match(
-            r".*.(css|js|bmp|gif|jpe?g|ico"
-            + r"|png|tiff?|mid|mp2|mp3|mp4"
-            + r"|wav|avi|mov|mpeg|ram|m4v|mkv|ogg|ogv|pdf"
-            + r"|ps|eps|tex|ppt|pptx|doc|docx|xls|xlsx|names"
-            + r"|data|dat|exe|bz2|tar|msi|bin|7z|psd|dmg|iso"
-            + r"|epub|dll|cnf|tgz|sha1|pdf "
-            + r"|thmx|mso|arff|rtf|jar|csv|odc|ova|bib|r|txt|py|scm|rkt|java|ds_store|pd|sql|xml|war|c|h|sh|svg|fig|cfg|m"
-            + r"|rm|smil|wmv|swf|wma|zip|rar|gz|ppsx|class)$", parsed.path.lower()):
-            return False
-
-        if "@" in str(url):
+        if re.match(EXTENSIONS_PATTERN, parsed.path.lower()):
             return False
         
         # The regex string will account for all URLs in this form:
@@ -124,7 +129,7 @@ def is_valid(url):
         # *.informatics.uci.edu/*
         # *.stat.uci.edu/*
         # Overall match string is r".*\.(ics|cs|informatics|stat)\.uci\.edu$"
-        return re.match(REGEX_PATTERN, parsed.netloc.lower()) is not None
+        return re.match(DOMAIN_PATTERN, parsed.netloc.lower()) is not None
 
     except TypeError:
         print("TypeError for ", parsed)

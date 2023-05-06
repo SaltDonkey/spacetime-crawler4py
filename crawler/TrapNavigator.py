@@ -6,6 +6,7 @@ class TrapNavigator:
     """
 
     def __init__(self):
+        # All the traps found through crawling
         self.start_traps = [
             "wiki.ics.uci.edu/doku.php",
             "www.informatics.uci.edu/files/pdf/InformaticsBrochure-March2018",
@@ -22,6 +23,7 @@ class TrapNavigator:
             "www.ics.uci.edu/ugrad/honors/index.php"
         ]
 
+        # Any emails we also do not want
         self.end_traps = [
             "@uci.edu",
             "@ics.uci.edu",
@@ -40,17 +42,17 @@ class TrapNavigator:
         else:
             return False
 
-        # return self.similarity_check(url, tokens)
-
     def known_traps(self, new_url):
         """
         Checks for known traps.
         :param new_url: the url to check.
         :return:
         """
+        # First take only the netloc and the path, disregarding the scheme
         parsed = urlparse(new_url)
         noSchemeURL = parsed.netloc + parsed.path
 
+        # Then check this noSchemeURL if it matches any traps
         for s_trap in self.start_traps:
             if noSchemeURL.startswith(s_trap):
                 return True
